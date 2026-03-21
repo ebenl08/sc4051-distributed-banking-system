@@ -12,6 +12,7 @@ int main(){
   const char* hostname = "localhost";
 
   UDPServer server = UDPServer(port, hostname);
+  
   do{
     char buffer[BUFFER_SIZE];
 

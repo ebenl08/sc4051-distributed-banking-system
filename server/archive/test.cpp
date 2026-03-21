@@ -11,16 +11,60 @@
 #include <unistd.h>
 #include <iostream>
 
+#include "../Marshalling.h"
+
 // void marshalInt(char*  , int32_t val){
-  
 // }
-
 // int32_t unmarshalInt(char* b){
-
 // }
+
+void printBuffer(char* buffer, int32_t length){
+  printf("0x");
+  for(int i = 0; i < length; i++){
+    printf("%02x", buffer[i]);
+  }printf("\n");
+}
 
 int main(){
-  // u_int64_t port = (0x01234567);
+
+  int32_t val32 = 0x180095AB;
+  int64_t val64 = 0x180095AB180095AB;
+  float valf = 3.14f;
+  const char* valstr = "Hello I am a client";
+  
+  char buffer[1500];
+  
+  printf("%x\n", val32);
+  Marshalling::marshal(buffer, val32);
+  val32 = Marshalling::unmarshalInt32(buffer);
+  printf("%x\n", val32);
+  
+  memset(buffer, 0, sizeof(buffer));
+  
+  printf("%llx\n", val64);
+  Marshalling::marshal(buffer, val64);
+  val64 = Marshalling::unmarshalInt64(buffer);
+  printf("%llx\n", val64);
+
+  memset(buffer, 0, sizeof(buffer));
+
+  printf("%.2f\n", valf);
+  Marshalling::marshal(buffer, valf);
+  valf = Marshalling::unmarshalFloat(buffer);
+  printf("%.2f\n", valf);
+
+  memset(buffer, 0, sizeof(buffer));
+
+  printf("%s\n", valstr);
+  Marshalling::marshal(buffer, valstr);
+  valstr = Marshalling::unmarshalString(buffer);
+  printf("%s\n", valstr);
+
+  return 0;
+}
+
+void test1(){
+    // u_int64_t port = (0x01234567);
   // printf("%#llx\n", port);
   // port = htonl(port);
   // printf("%#llx\n", port);
@@ -79,7 +123,4 @@ int main(){
   }
 
   memset(buff,0, sizeof(buff));
-  
-
-  return 0;
 }

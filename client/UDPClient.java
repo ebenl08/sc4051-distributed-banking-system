@@ -12,12 +12,12 @@ public class UDPClient{
     private static final int MAX_TIMEOUT = 5;
   }
 
-  private DatagramSocket socket;
-  private InetAddress servaddr;
-  private int port;
-  private int semanticInvoc; // will be mainly used for monitor update
-  private int msgIdCounter;
-  private int maxTimeout;
+  private final DatagramSocket socket;
+  private final InetAddress servaddr;
+  private final int port;
+  // private int semanticInvoc; // will be mainly used for monitor update
+  // private int msgIdCounter;
+  // private int maxTimeout;
 
   private boolean debug;
 
@@ -26,14 +26,14 @@ public class UDPClient{
     this.servaddr = InetAddress.getByName(ip);
     this.port = port;
 
-    this.setTimeout(C.MAX_TIMEOUT);
-    this.msgIdCounter = 0;
+    // this.setTimeout(C.MAX_TIMEOUT);
+    // this.msgIdCounter = 0;
   }
 
-  private void setTimeout(int maxTimeout) throws SocketException{
-    this.socket.setSoTimeout(maxTimeout);
-    this.maxTimeout = maxTimeout;
-  }
+  // private void setTimeout(int maxTimeout) throws SocketException{
+  //   this.socket.setSoTimeout(maxTimeout);
+  //   this.maxTimeout = maxTimeout;
+  // }
 
   public void send(byte[] message) throws IOException, SocketTimeoutException {
     byte[] buffer = message;

@@ -29,7 +29,7 @@ class Marshalling{
     static int32_t unmarshalInt32(char* buffer);
     static int64_t unmarshalInt64(char* buffer);
     static float unmarshalFloat(char* buffer);
-    static char* unmarshalString(char* buffer);
+    static const char* unmarshalString(char* buffer);
 
   private:
 };
