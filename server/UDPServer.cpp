@@ -22,7 +22,7 @@ UDPServer::UDPServer(int16_t port, const char* hostname){
 
 void UDPServer::send(const char* buffer, const sockaddr_in clientaddr){
   socklen_t len = sizeof(clientaddr);
-  sendto(this->servsocket, buffer, strlen(buffer), 0, (const sockaddr*) &clientaddr, len);
+  void send(const char* buffer, int length, const sockaddr_in clientaddr)
 }
 
 sockaddr_in UDPServer::receive(char* buffer){
