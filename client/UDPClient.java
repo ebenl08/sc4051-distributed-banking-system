@@ -51,9 +51,24 @@ public class UDPClient{
   public static void main(String[] args) {
     try{
       UDPClient client = new UDPClient("localhost", 8080);
-      String message = "Hello from Client";
-      client.send(message.getBytes());
+      //String message = "Hello from Client";
+      //client.send(message.getBytes());
       
+      byte[] message = new byte[]{
+        1, 0, 0, 0,   // reqID = 1
+        0, 0, 0, 0,   // serviceID = 0
+        0, 0, 0, 0,   // statusCode = 0
+
+        5, 0, 0, 0,   'A','l','i','c','e',
+
+        11, 0, 0, 0,  'p','a','s','s','w','o','r','d','1','2','3',
+
+        'M',
+
+        -24, 3, 0, 0, 0, 0, 0, 0   // INT64 1000
+      };
+      client.send(message);
+
       byte[] response = client.receive();
       System.out.println(new String(response)); 
       

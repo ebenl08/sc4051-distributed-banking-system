@@ -36,6 +36,10 @@ int main(){
   
   printf("%x\n", val32);
   Marshalling::marshal(buffer, val32);
+  for (int i = 0; i < 4; i++) {
+    printf("%02x ", (unsigned char)buffer[i]);
+  }
+  printf("\n");
   val32 = Marshalling::unmarshalInt32(buffer);
   printf("%x\n", val32);
   

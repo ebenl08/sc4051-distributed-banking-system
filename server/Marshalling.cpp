@@ -63,7 +63,7 @@ float Marshalling::unmarshalFloat(char* buffer){
   return value;
 }
 
-const char* Marshalling::unmarshalString(char* buffer){
+char* Marshalling::unmarshalString(char* buffer){
   char* ptr = buffer;
   int32_t length = Marshalling::unmarshalInt32(ptr);
   ptr += 4;

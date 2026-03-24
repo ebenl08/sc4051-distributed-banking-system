@@ -17,6 +17,25 @@ using namespace std;
 
 #define BUFFER_SIZE 1500
 
+// 64-bit conversions
+static inline uint64_t htonll(uint64_t value) {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    return ((uint64_t)htonl((uint32_t)(value & 0xFFFFFFFFULL)) << 32) |
+            htonl((uint32_t)(value >> 32));
+#else
+    return value;
+#endif
+}
+
+static inline uint64_t ntohll(uint64_t value) {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    return ((uint64_t)ntohl((uint32_t)(value & 0xFFFFFFFFULL)) << 32) |
+            ntohl((uint32_t)(value >> 32));
+#else
+    return value;
+#endif
+}
+
 class Marshalling{
   public:
     Marshalling();
@@ -29,7 +48,7 @@ class Marshalling{
     static int32_t unmarshalInt32(char* buffer);
     static int64_t unmarshalInt64(char* buffer);
     static float unmarshalFloat(char* buffer);
-    static const char* unmarshalString(char* buffer);
+    static char* unmarshalString(char* buffer);
 
   private:
 };
