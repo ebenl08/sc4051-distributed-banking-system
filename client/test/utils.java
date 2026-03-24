@@ -1,4 +1,4 @@
-package client;
+package test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

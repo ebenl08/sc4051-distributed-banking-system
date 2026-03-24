@@ -1,4 +1,4 @@
-package client;
+package test;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
