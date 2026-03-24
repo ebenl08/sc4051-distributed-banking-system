@@ -14,7 +14,7 @@ public class UDPClient{
 
   private final DatagramSocket socket;
   private final InetAddress servaddr;
-  private final int port; 
+  private final int port;
   // private int semanticInvoc; // will be mainly used for monitor update
   // private int msgIdCounter;
   // private int maxTimeout;
