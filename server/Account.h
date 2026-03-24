@@ -9,23 +9,29 @@
 #include <unistd.h>
 #include <iostream>
 
+#include <string>
 
+#include "Constant.h"
 
 class Account{
     
     public:
-        Account(const char* username, const char* password, const char currency);
-        const char* getUsername();
-        const char* getPassword();
-        const char* getCurrencyString();
-        const char* getCurrency();
-        const int64_t getBalance();
-        const int64_t updateBalance(int64_t amount);
+        Account(std::string username, std::string password, char currency);
+        const std::string getUsername() const;
+        const std::string getPassword() const;
+        const std::string getCurrencyString() const;
+        const char getCurrency() const;
+        const int64_t getBalance() const;
+        const std::string getBalanceString() const;
+        void updateBalance(int64_t amount);
+
+        friend bool operator==(const Account& lhs, const Account& rhs);
+        friend std::ostream& operator<<(std::ostream& os, const Account& account);
     private:
-        const char* username;
-        const char* password;
-        const char currency;
-        const int64_t balance = 0;
+        std::string username;
+        std::string password;
+        char currency;
+        int64_t balance = 0;
         
 };
 
