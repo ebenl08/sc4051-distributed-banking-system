@@ -14,6 +14,9 @@
 #include <iostream>
 #include <vector> 
 
+#include "Marshalling.h"
+#include "Handler.h"
+
 #define BUFFER_SIZE 1500
 
 enum DataType {

@@ -1,5 +1,4 @@
 #include "UDPServer.h"
-#include "Marshalling.h"
 using namespace std;
 
 std::vector<Argument> UDPServer::parseArgs(char* buffer, int& counter, const std::vector<DataType>& schema) {
@@ -43,7 +42,7 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
     int32_t statusCode = Marshalling::unmarshalInt32(buffer + 8);
     int counter = 12;
     
-    if(serviceID == 0){
+    if(serviceID == 1){
         // Open New Account
         vector<DataType> schema = {
             TYPE_STRING,
@@ -52,7 +51,8 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-    } else if(serviceID == 1){
+        statusCode = service1(args, respond, length);
+    } else if(serviceID == 2){
         // Close Account
         vector<DataType> schema = {
             TYPE_STRING,
@@ -60,7 +60,8 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_STRING
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-    } else if(serviceID == 2){
+        statusCode = service2(args, respond, length);
+    } else if(serviceID == 3){
         // Deposit/Withdraw
         vector<DataType> schema = {
             TYPE_STRING,
@@ -70,10 +71,9 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-    } else if(serviceID == 3){
-        // Monitor All Account
+        statusCode = service3(args, respond, length);
     } else if(serviceID == 4){
-        // Idempotent additional service
+        // Transfer money
         vector<DataType> schema = {
             TYPE_STRING,
             TYPE_INT32,
@@ -85,15 +85,21 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service4(args, respond, length);
     } else if(serviceID == 5){
+        // View account
+        
+    } else if(serviceID == 6){
+        // Monitor Account
+        
+    } else if(serviceID == 7){
         // Non-Idempotent additional service
         vector<DataType> schema = {
             TYPE_STRING,
             TYPE_INT32,
             TYPE_STRING,
             TYPE_STRING,
-            TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-    }
+        statusCode = service7(args, respond, length);
 }
