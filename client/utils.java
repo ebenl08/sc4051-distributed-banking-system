@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class utils {
+public final class Utils {
 	public enum DataType {
 		TYPE_STRING,
 		TYPE_INT32,
@@ -56,7 +56,7 @@ public final class utils {
 		}
 	}
 
-	private utils() {}
+	private Utils() {}
 
 	public static byte[] concat(List<byte[]> parts){
 		int total = 0;

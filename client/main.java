@@ -3,15 +3,19 @@ package client;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import client.net.UDPClient;
+import client.net.Socket;
+import client.net.Marshalling;
+
 public class main {
   public static void main(String[] args) {
     try {
       UDPClient communication = new UDPClient();
-      socket client = new socket(communication);
+      Socket client = new Socket(communication);
 
 
       communication.setDebug(true);
-    communication.setSemanticInvoc(Constants.AT_LEAST_ONE_SEM_INVO);
+      communication.setSemanticInvoc(Constants.AT_LEAST_ONE_SEM_INVO);
       communication.setTimeoutMs(1000);
       communication.setMaxRetry(5);
       client.setTimeoutMs(communication.getTimeoutMs());

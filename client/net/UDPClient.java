@@ -1,9 +1,12 @@
-package client;
+package client.net;
 
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+
+import client.Constants;
 
 public class UDPClient {
 
