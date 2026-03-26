@@ -6,11 +6,11 @@ import java.net.UnknownHostException;
 public class main {
   public static void main(String[] args) {
     try {
-      UDPClient client = new UDPClient();
+      communication client = new communication();
 
 
       client.setDebug(true);
-      client.setSemanticInvoc(UDPClient.C.SEMANTIC_AT_LEAST_ONCE);
+      client.setSemanticInvoc(communication.C.SEMANTIC_AT_LEAST_ONCE);
       client.setTimeoutMs(1000);
       client.setMaxRetry(5);
 
