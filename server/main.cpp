@@ -7,30 +7,30 @@
 
 #include "UDPServer.h"
 #include "Marshalling.h"
-#include "Communication.h"
+#include "Socket.h"
 
 int main(){
   int port = 8080;
   const char* hostname = "localhost";
 
-  UDPServer server = UDPServer(port, hostname);
+  Socket sock = Socket(port, hostname);
   
   do{
     char buffer[BUFFER_SIZE];
-
-    sockaddr_in clientaddr = server.receive((char*) buffer);
-
+    //format wil be reqID(4 bytes), serviceID(4 bytes), statusCode(4 bytes), payloadHeader, payload, payloadHeader, payload, ...
+    sockaddr_in clientaddr = sock.receive((char*) buffer);
 
     printf("Message received\n");
-    //format wil be reqID(4 bytes), serviceID(4 bytes), statusCode(4 bytes), payloadHeader, payload, payloadHeader, payload, ...
-    Communication::communication_layer(buffer);
-
+    
+    char respond[BUFFER_SIZE];
+    int length = 0;
+    UDPServer::Server(buffer, respond, length);
+    cout << length << endl;
     printf("[Client %s port %d] Packet received\n", 
       inet_ntoa(clientaddr.sin_addr), 
       ntohs(clientaddr.sin_port));
 
-    const char* message = "Hello from Server";
-    server.send(message, clientaddr);
+    sock.send(respond, length, clientaddr);
     
     printf("Response message sent.\n");
   }while(true);
