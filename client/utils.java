@@ -143,16 +143,31 @@ public final class utils {
 					args.add(Argument.ofString(stringValue));
 					break;
 				case TYPE_INT32:
+					int int32Size = Marshalling.unmarshalInt32(buffer, counter);
+					counter += Constants.INT_SIZE;
+					if (int32Size != Constants.INT_SIZE) {
+						throw new IllegalArgumentException("Invalid int32 size prefix: " + int32Size);
+					}
 					int intValue = Marshalling.unmarshalInt32(buffer, counter);
 					counter += Constants.INT_SIZE;
 					args.add(Argument.ofInt32(intValue));
 					break;
 				case TYPE_INT64:
+					int int64Size = Marshalling.unmarshalInt32(buffer, counter);
+					counter += Constants.INT_SIZE;
+					if (int64Size != Constants.LONG_SIZE) {
+						throw new IllegalArgumentException("Invalid int64 size prefix: " + int64Size);
+					}
 					long longValue = Marshalling.unmarshalInt64(buffer, counter);
 					counter += Constants.LONG_SIZE;
 					args.add(Argument.ofInt64(longValue));
 					break;
 				case TYPE_FLOAT:
+					int floatSize = Marshalling.unmarshalInt32(buffer, counter);
+					counter += Constants.INT_SIZE;
+					if (floatSize != Constants.FLOAT_SIZE) {
+						throw new IllegalArgumentException("Invalid float size prefix: " + floatSize);
+					}
 					float floatValue = Marshalling.unmarshalFloat(buffer, counter);
 					counter += Constants.FLOAT_SIZE;
 					args.add(Argument.ofFloat(floatValue));
