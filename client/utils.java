@@ -1,4 +1,4 @@
-package test;
+package client;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -81,13 +81,13 @@ public final class utils {
 
 		for(Object field : fields){
 			if(field instanceof Integer integer){
-				parts.add(Marshalling.marshal(UDPClient.C.INT_SIZE));
+				parts.add(Marshalling.marshal(Constants.INT_SIZE));
 				parts.add(Marshalling.marshal(integer));
 			} else if(field instanceof Long longValue){
-				parts.add(Marshalling.marshal(UDPClient.C.LONG_SIZE));
+				parts.add(Marshalling.marshal(Constants.LONG_SIZE));
 				parts.add(Marshalling.marshal(longValue));
 			} else if(field instanceof Float floatValue){
-				parts.add(Marshalling.marshal(UDPClient.C.FLOAT_SIZE));
+				parts.add(Marshalling.marshal(Constants.FLOAT_SIZE));
 				parts.add(Marshalling.marshal(floatValue));
 			} else if(field instanceof String string){
 				byte[] strBytes = string.getBytes(StandardCharsets.UTF_8);
@@ -103,7 +103,7 @@ public final class utils {
 	public static byte[] buildAckPayload(int responseId){
 		List<byte[]> parts = new ArrayList<>();
 		parts.add(Marshalling.marshal(responseId));
-		parts.add(UDPClient.C.ACK.getBytes(StandardCharsets.UTF_8));
+		parts.add(Constants.ACK_CHAR.getBytes(StandardCharsets.UTF_8));
 		return concat(parts);
 	}
 
@@ -112,16 +112,16 @@ public final class utils {
 	}
 
 	public static byte[] readResponseBody(byte[] responsePacket) {
-		byte[] body = new byte[responsePacket.length - UDPClient.C.INT_SIZE];
-		System.arraycopy(responsePacket, UDPClient.C.INT_SIZE, body, 0, body.length);
+		byte[] body = new byte[responsePacket.length - Constants.INT_SIZE];
+		System.arraycopy(responsePacket, Constants.INT_SIZE, body, 0, body.length);
 		return body;
 	}
 
 
 	public static RequestHeader parseRequestHeader(byte[] buffer) {
 		int reqId = Marshalling.unmarshalInt32(buffer, 0);
-		int serviceId = Marshalling.unmarshalInt32(buffer, UDPClient.C.INT_SIZE);
-		int statusCode = Marshalling.unmarshalInt32(buffer, UDPClient.C.INT_SIZE * 2);
+		int serviceId = Marshalling.unmarshalInt32(buffer, Constants.INT_SIZE);
+		int statusCode = Marshalling.unmarshalInt32(buffer, Constants.INT_SIZE * 2);
 		return new RequestHeader(reqId, serviceId, statusCode);
 	}
 
@@ -137,24 +137,24 @@ public final class utils {
 			switch (type) {
 				case TYPE_STRING:
 					int strLength = Marshalling.unmarshalInt32(buffer, counter);
-					counter += UDPClient.C.INT_SIZE;
+					counter += Constants.INT_SIZE;
 					String stringValue = new String(buffer, counter, strLength, StandardCharsets.UTF_8);
 					counter += strLength;
 					args.add(Argument.ofString(stringValue));
 					break;
 				case TYPE_INT32:
 					int intValue = Marshalling.unmarshalInt32(buffer, counter);
-					counter += UDPClient.C.INT_SIZE;
+					counter += Constants.INT_SIZE;
 					args.add(Argument.ofInt32(intValue));
 					break;
 				case TYPE_INT64:
 					long longValue = Marshalling.unmarshalInt64(buffer, counter);
-					counter += UDPClient.C.LONG_SIZE;
+					counter += Constants.LONG_SIZE;
 					args.add(Argument.ofInt64(longValue));
 					break;
 				case TYPE_FLOAT:
 					float floatValue = Marshalling.unmarshalFloat(buffer, counter);
-					counter += UDPClient.C.FLOAT_SIZE;
+					counter += Constants.FLOAT_SIZE;
 					args.add(Argument.ofFloat(floatValue));
 					break;
 				default:
