@@ -1,9 +1,9 @@
 package client.testing;
 
 import client.Constants;
-import client.Marshalling;
-import client.UDPClient;
-import client.utils;
+import client.net.Marshalling;
+import client.net.UDPClient;
+import client.Utils;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
@@ -111,7 +111,7 @@ public class SemanticInvocationLocalTest {
                 return;
             }
 
-            utils.RequestHeader header = utils.parseRequestHeader(payload);
+            Utils.RequestHeader header = Utils.parseRequestHeader(payload);
             int requestId = header.requestId;
 
             if (this.responseCache.containsKey(requestId)) {
@@ -121,7 +121,7 @@ public class SemanticInvocationLocalTest {
             }
 
             int[] counter = new int[] {Constants.INT_SIZE * 3};
-            List<utils.Argument> requestArgs = utils.parseArgs(payload, counter, utils.schemaForService(OPEN_ACCOUNT_SERVICE_ID));
+            List<Utils.Argument> requestArgs = Utils.parseArgs(payload, counter, Utils.schemaForService(OPEN_ACCOUNT_SERVICE_ID));
 
             String userName = requestArgs.get(0).stringValue;
             String password = requestArgs.get(1).stringValue;
@@ -168,7 +168,7 @@ public class SemanticInvocationLocalTest {
             parts.add(userBytes);
 
             parts.add(Marshalling.marshal(openingBalance));
-            byte[] packet = utils.concat(parts);
+            byte[] packet = Utils.concat(parts);
             printPacketAfterMarshalling("[server] AFTER marshalling response packet", packet);
             return packet;
         }
@@ -205,7 +205,7 @@ public class SemanticInvocationLocalTest {
             FakeWire wire,
             byte[] payload,
             boolean monitorMode) {
-        utils.RequestHeader header = utils.parseRequestHeader(payload);
+        Utils.RequestHeader header = Utils.parseRequestHeader(payload);
         int responseId = header.requestId;
         int bodyOffset = Constants.INT_SIZE * 3;
 
@@ -216,7 +216,7 @@ public class SemanticInvocationLocalTest {
         UDPClient.ResponseDecision decision = communication.evaluateResponse(responseId, monitorMode);
 
         if (decision.shouldAck) {
-            wire.sendClientAck(utils.buildAckPayload(responseId));
+            wire.sendClientAck(Utils.buildAckPayload(responseId));
             if (communication.isDebug()) {
                 System.out.println("[client] ACK sent for responseId=" + responseId);
             }
@@ -252,9 +252,9 @@ public class SemanticInvocationLocalTest {
     }
 
     private static void printOpenAccountRequestAfterUnmarshalling(byte[] requestPayload) {
-        utils.RequestHeader header = utils.parseRequestHeader(requestPayload);
+        Utils.RequestHeader header = Utils.parseRequestHeader(requestPayload);
         int[] counter = new int[] {Constants.INT_SIZE * 3};
-        List<utils.Argument> requestArgs = utils.parseArgs(requestPayload, counter, utils.schemaForService(OPEN_ACCOUNT_SERVICE_ID));
+        List<Utils.Argument> requestArgs = Utils.parseArgs(requestPayload, counter, Utils.schemaForService(OPEN_ACCOUNT_SERVICE_ID));
 
         System.out.println("[server] AFTER unmarshalling request payload:");
         System.out.println("  requestId=" + header.requestId);
@@ -292,7 +292,7 @@ public class SemanticInvocationLocalTest {
             currency,
             openingBalance);
 
-        byte[] requestPayload = utils.buildRequest(
+        byte[] requestPayload = Utils.buildRequest(
             requestId,
             OPEN_ACCOUNT_SERVICE_ID,
             statusCode,

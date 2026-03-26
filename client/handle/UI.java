@@ -4,13 +4,14 @@ import java.util.Scanner;
 
 public class UI {
     // Constants
-    private static final String HIDE_CURSOR = "\033[?25l";
-    private static final String SHOW_CURSOR = "\033[?25h";
-    private static final String HOME  = "\033[H";
-    private static final String RESET = "\033[0m";
+    public static final String HIDE_CURSOR = "\033[?25l";
+    public static final String SHOW_CURSOR = "\033[?25h";
+    
+    public static final String HOME  = "\033[H";
+    public static final String RESET = "\033[0m";
 
-    private static final String CYAN  = "\033[0;36m";
-    private static final String GREEN = "\033[0;32m";
+    public static final String CYAN  = "\033[0;36m";
+    public static final String GREEN = "\033[0;32m";
     public static final String RED    = "\033[0;31m";
     public static final String YELLOW = "\033[0;33m";
     public static final String BOLD   = "\033[1m";
@@ -48,10 +49,21 @@ public class UI {
         Scanner s = new Scanner(System.in);
         return s.nextLine();
     }
+
+
     public static void printSuccess(String msg) {
         System.out.println(GREEN + " [SUCCESS] " + msg + RESET);
         UI.sleep();
     }
+    public static void printError(String msg) {
+        System.out.println(RED + " [ERROR] " + msg + RESET);
+        UI.sleep();
+    }
+    public static void display(String msg){
+        System.out.println(msg);
+    }
+
+
     private static String centerText(String text, int width) {
         int pad = (width - text.length()) / 2;
         StringBuilder sb = new StringBuilder();

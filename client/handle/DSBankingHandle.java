@@ -1,21 +1,44 @@
 package client.handle;
 
 import java.util.Scanner;
-import client.handle.UI;
-import client.net.Socket;
+
+
+import client.net.UDPClient;
 
 public class DSBankingHandle {
 
     private static final Scanner scanner = new Scanner(System.in);
     
-    public static void main(String[] args) {
+    // Handler instances
+    private UDPClient client;
+    private static OpenAccountHandle openAccountHandle;
+    private static CloseAccountHandle closeAccountHandle;
+    private static DepositWithdrawHandle depositWithdrawHandle;
+    private static TransferMoneyHandle transferMoneyHandle;
+    private static ViewAccountHandle viewAccountHandle;
+    private static MonitorHandle monitorHandle;
+    private static ChangePasswordHandle changePasswordHandle;
+
+    public DSBankingHandle(UDPClient client) {
+        this.client = client;
+        openAccountHandle = new OpenAccountHandle(client);
+        closeAccountHandle = new CloseAccountHandle(client);
+        depositWithdrawHandle = new DepositWithdrawHandle(client);
+        transferMoneyHandle = new TransferMoneyHandle(client);
+        viewAccountHandle = new ViewAccountHandle(client);
+        monitorHandle = new MonitorHandle(client);
+        changePasswordHandle = new ChangePasswordHandle(client);
+    }
+
+    public void handle(){
         Runtime.getRuntime().addShutdownHook(new Thread(UI::showCursor));
         UI.hideCursor();
         UI.clearAndHome();
 
         while (true) {
             UI.clearScreen();
-            renderHeader("ZEUS BANKING SYSTEM");
+            UI.clearAndHome();
+            UI.drawBox("ZEUS BANKING SYSTEM");
 
             System.out.println("  1. Open Account         5. View Account");
             System.out.println("  2. Close Account        6. Monitor All");
@@ -24,28 +47,26 @@ public class DSBankingHandle {
             UI.drawSeparator();
 
             String choice = UI.prompt("SELECT OPTION (1-8)");
-
-            if ("4".equals(choice)) {
-                // handleTransferPage(); // Uncomment and implement if needed
-            } else if ("8".equals(choice)) {
-                break;
+            int choiceNum = Integer.parseInt(choice);
+            switch (choiceNum) {
+                case 1 -> openAccountHandle.handle();
+                case 2 -> closeAccountHandle.handle();
+                case 3 -> depositWithdrawHandle.handle();
+                case 4 -> transferMoneyHandle.handle();
+                case 5 -> viewAccountHandle.handle();
+                case 6 -> monitorHandle.handle();
+                case 7 -> changePasswordHandle.handle();
+                case 8 -> {
+                    UI.printSuccess("Thank you for using Zeus Banking System!");
+                    return;
+                }
+                default -> {
+                    System.out.println(UI.RED + "Invalid option. Please try again." + UI.RESET);
+                    UI.sleep();
+                }
             }
+
         }
-    }
-
-
-
-    public static void handleMonitorPage() {
-        UI.clearScreen();
-        renderHeader("MONITOR SERVICE");
-
-        // TODO: Implement monitor service
-
-    }
-
-    public static void renderHeader(String title){
-        UI.clearAndHome();
-        UI.drawBox(title);
     }
 }
 

@@ -1,5 +1,7 @@
 package client;
 
+import client.net.Marshalling;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
