@@ -7,17 +7,15 @@ public class main {
   public static void main(String[] args) {
     try {
       UDPClient communication = new UDPClient();
-      socket client = new socket(communication);
 
 
       communication.setDebug(true);
-    communication.setSemanticInvoc(Constants.AT_LEAST_ONE_SEM_INVO);
+      communication.setSemanticInvoc(Constants.AT_LEAST_ONE_SEM_INVO);
       communication.setTimeoutMs(1000);
       communication.setMaxRetry(5);
-      client.setTimeoutMs(communication.getTimeoutMs());
 
       System.out.println("Communication layer entrypoint is ready.");
-    System.out.println("Client initialized with server " + Constants.DEFAULT_HOST + ":" + Constants.DEFAULT_PORT);
+      System.out.println("Client initialized with server " + Constants.DEFAULT_HOST + ":" + Constants.DEFAULT_PORT);
     } catch (SocketException e) {
       System.out.println("Socket error: " + e.getMessage());
     } catch (UnknownHostException e) {

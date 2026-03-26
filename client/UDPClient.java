@@ -1,6 +1,9 @@
 package client;
 
+import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -13,6 +16,7 @@ public class UDPClient {
 	private int maxRetry;
 	private final Map<Integer, Boolean> handledResponseIds;
 	private boolean debug;
+	private final socket transport;
 
 	public static final class ResponseDecision {
 		public final boolean duplicate;
@@ -24,13 +28,15 @@ public class UDPClient {
 		}
 	}
 
-	public UDPClient() {
+	public UDPClient() throws SocketException, UnknownHostException {
 		this.semanticInvoc = Constants.NO_SEM_INVO;
 		this.requestIdCounter = 0;
 		this.timeoutMs = Constants.DEFAULT_TIMEOUT;
 		this.maxRetry = Constants.DEFAULT_MAX_TIMEOUT;
 		this.handledResponseIds = new HashMap<>();
 		this.debug = false;
+		this.transport = new socket();
+		this.transport.setTimeoutMs(this.timeoutMs);
 	}
 
 	public void setDebug(boolean debug) {
@@ -47,6 +53,11 @@ public class UDPClient {
 
 	public void setTimeoutMs(int timeoutMs) {
 		this.timeoutMs = timeoutMs;
+		try {
+			this.transport.setTimeoutMs(timeoutMs);
+		} catch (SocketException e) {
+			throw new RuntimeException("Unable to set socket timeout", e);
+		}
 	}
 
 	public int getTimeoutMs() {
@@ -87,5 +98,52 @@ public class UDPClient {
 		}
 
 		return true;
+	}
+
+	private byte[] receiveResponse(boolean monitorMode) throws IOException {
+		while (true) {
+			byte[] payload = this.transport.receive();
+			utils.RequestHeader header = utils.parseRequestHeader(payload);
+			int responseId = header.requestId;
+			int bodyOffset = Constants.INT_SIZE * 3;
+
+			if (this.debug) {
+				System.out.println("[DEBUG] received response id=" + responseId);
+			}
+
+			ResponseDecision decision = evaluateResponse(responseId, monitorMode);
+
+			if (decision.shouldAck) {
+				this.transport.send(utils.buildAckPayload(responseId));
+			}
+
+			if (decision.duplicate) {
+				if (this.debug) {
+					System.out.println("Duplicate response, ACK resent");
+				}
+				continue;
+			}
+
+			return java.util.Arrays.copyOfRange(payload, bodyOffset, payload.length);
+		}
+	}
+
+	public byte[] sendRequest(byte[] requestPayload, boolean monitorMode) throws IOException, TimeoutException {
+		int timeoutCount = 0;
+
+		while (true) {
+			try {
+				this.transport.setTimeoutMs(this.timeoutMs);
+				this.transport.send(requestPayload);
+				return receiveResponse(monitorMode);
+			} catch (SocketTimeoutException e) {
+				timeoutCount += 1;
+				try {
+					shouldRetryAfterTimeout(timeoutCount);
+				} catch (SocketTimeoutException semanticTimeout) {
+					throw e;
+				}
+			}
+		}
 	}
 }
