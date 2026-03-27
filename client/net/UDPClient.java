@@ -1,4 +1,4 @@
-package client;
+package client.net;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -7,6 +7,9 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+
+
+import client.Constants;
 
 public class UDPClient {
 

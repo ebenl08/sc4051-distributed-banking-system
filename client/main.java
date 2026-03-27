@@ -3,10 +3,15 @@ package client;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import client.net.UDPClient;
+import client.net.Socket;
+import client.net.Marshalling;
+
 public class main {
   public static void main(String[] args) {
     try {
       UDPClient communication = new UDPClient();
+      Socket client = new Socket(communication);
 
 
       communication.setDebug(true);
