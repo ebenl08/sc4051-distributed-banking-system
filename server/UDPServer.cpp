@@ -88,10 +88,20 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
         statusCode = service4(args, respond, length);
     } else if(serviceID == 5){
         // View account
-        
+        vector<DataType> schema = {
+            TYPE_STRING,
+            TYPE_INT32,
+            TYPE_STRING
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service5(args, respond, length);
     } else if(serviceID == 6){
         // Monitor Account
-        
+        vector<DataType> schema = {
+            TYPE_INT32 
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service6(args, respond, length, clientaddr);
     } else if(serviceID == 7){
         // Non-Idempotent additional service
         vector<DataType> schema = {

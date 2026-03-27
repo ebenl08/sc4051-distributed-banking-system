@@ -18,6 +18,7 @@ using namespace std;
 class Handler{
   public:
     Handler();
+    void setCurrentClientAddr(const sockaddr_in& clientaddr);
 
     static int32_t service1(const std::vector<Argument>& args, char* respond, int& length);
     static int32_t service2(const std::vector<Argument>& args, char* respond, int& length);
@@ -29,6 +30,8 @@ class Handler{
 
   private:
     static AccountManager accountManager;
+    sockaddr_in currentClientAddr;
+    bool hasCurrentClientAddr = false;
 };
 
 #endif

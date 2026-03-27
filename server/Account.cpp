@@ -1,23 +1,5 @@
 #include "Account.h"
 
-// class Account{
-    
-//     public:
-//         Account(const char* username, const char* password, const char currency);
-//         const char* getUsername();
-//         const char* getPassword();
-//         const char* getCurrencyString();
-//         const char getCurrency();
-//         const int64_t getBalance();
-//         const int64_t updateBalance(int64_t amount);
-//     private:
-//         const char* username;
-//         const char* password;
-//         const char currency;
-//         const int64_t balance = 0;
-        
-// };
-
 using namespace std;
 
 Account::Account(int32_t accountNumber, string username, string password, char currency)
