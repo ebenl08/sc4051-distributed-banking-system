@@ -1,53 +1,105 @@
 #include "UDPServer.h"
+using namespace std;
 
+std::vector<Argument> UDPServer::parseArgs(char* buffer, int& counter, const std::vector<DataType>& schema) {
+    std::vector<Argument> args;
+    args.reserve(schema.size());
 
-UDPServer::UDPServer(int16_t port, const char* hostname){
+    for (DataType type : schema) {
+        Argument arg;
+        arg.type = type;
 
-  this->servsocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (type == TYPE_STRING) {
+            arg.value.stringValue = Marshalling::unmarshalString(buffer + counter);
+            //std::cout<<arg.value.stringValue<<endl;
+            counter += 4 + strlen(arg.value.stringValue);
+        }
+        else if (type == TYPE_INT32) {
+            arg.value.int32Value = Marshalling::unmarshalInt32(buffer + counter);
+            //std::cout<<arg.value.int32Value<<endl;
+            counter += 4;
+        }
+        else if (type == TYPE_INT64) {
+            arg.value.int64Value = Marshalling::unmarshalInt64(buffer + counter);
+            //std::cout<<arg.value.int64Value<<endl;
+            counter += 8;
+        }
+        else if (type == TYPE_CHAR) {
+            arg.value.charValue = buffer[counter];
+            //std::cout<<arg.value.charValue<<endl;
+            counter += 1;
+        }
 
-  if(this->servsocket < 0){
-    perror("Failed to create the socket");
-    exit(EXIT_FAILURE);
-  }
+        args.push_back(std::move(arg));
+    }
 
-  makeAddress(&(this->servaddr), hostname, port);
-  
-  socklen_t len = sizeof(this->servaddr);
-
-  if(bind(this->servsocket, (const struct sockaddr*) &(this->servaddr), len) < 0){
-    perror("Failed to bind the socket");
-    exit(EXIT_FAILURE);
-  }
+    return args;
 }
 
-void UDPServer::send(const char* buffer, const sockaddr_in clientaddr){
-  socklen_t len = sizeof(clientaddr);
-  sendto(this->servsocket, buffer, strlen(buffer), 0, (const sockaddr*) &clientaddr, len);
-}
-
-sockaddr_in UDPServer::receive(char* buffer){
-  sockaddr_in clientaddr;
-  socklen_t clientlen = sizeof(clientaddr);
-
-  int n = recvfrom(this->servsocket, (void *) buffer, BUFFER_SIZE, 0, (sockaddr *) &clientaddr, &clientlen);
-  if(n < 0){
-    perror("Failed to receive message");
-    return clientaddr;
-  }
-
-  return clientaddr;
-}
-
-
-
-
-void UDPServer::makeAddress(sockaddr_in* addr, const char* hostname, int16_t port){
-  struct hostent *host;
-  if((host = gethostbyname(hostname)) == NULL){
-    printf("Unknown Host Name\n");
-    exit(-1);
-  }
-  addr->sin_family = AF_INET;
-  addr->sin_addr = *(struct in_addr*) host->h_addr;
-  addr->sin_port = htons(port);
+void UDPServer::Server(char* buffer, char* respond, int& length){
+    int32_t reqID = Marshalling::unmarshalInt32(buffer);
+    int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
+    int32_t statusCode = Marshalling::unmarshalInt32(buffer + 8);
+    int counter = 12;
+    
+    if(serviceID == 1){
+        // Open New Account
+        vector<DataType> schema = {
+            TYPE_STRING,
+            TYPE_STRING,
+            TYPE_CHAR,
+            TYPE_INT64
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service1(args, respond, length);
+    } else if(serviceID == 2){
+        // Close Account
+        vector<DataType> schema = {
+            TYPE_STRING,
+            TYPE_INT32,
+            TYPE_STRING
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service2(args, respond, length);
+    } else if(serviceID == 3){
+        // Deposit/Withdraw
+        vector<DataType> schema = {
+            TYPE_STRING,
+            TYPE_INT32,
+            TYPE_STRING,
+            TYPE_STRING,
+            TYPE_INT64
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service3(args, respond, length);
+    } else if(serviceID == 4){
+        // Transfer money
+        vector<DataType> schema = {
+            TYPE_STRING,
+            TYPE_INT32,
+            TYPE_STRING,
+            TYPE_INT32,
+            TYPE_CHAR,
+            TYPE_CHAR,
+            TYPE_STRING,
+            TYPE_INT64
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service4(args, respond, length);
+    } else if(serviceID == 5){
+        // View account
+        
+    } else if(serviceID == 6){
+        // Monitor Account
+        
+    } else if(serviceID == 7){
+        // Non-Idempotent additional service
+        vector<DataType> schema = {
+            TYPE_STRING,
+            TYPE_INT32,
+            TYPE_STRING,
+            TYPE_STRING,
+        };
+        vector<Argument> args = parseArgs(buffer, counter, schema);
+        statusCode = service7(args, respond, length);
 }

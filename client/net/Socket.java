@@ -1,4 +1,3 @@
-
 package client.net;
 
 import java.io.IOException;
