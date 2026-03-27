@@ -21,17 +21,18 @@ using namespace std;
 class AccountManager{
     public:
         AccountManager();
-        int addAccount(string username, string password, char currency);
-        int closeAccount(string username, string password, char currency);
+        int addAccount(string username, string password, char currency, int32_t& accountN);
+        int closeAccount(string username, int32_t accountNumber string password);
         int validateAccount(Account account, string password);
-        int deposit(string username, string password, char currency, int64_t amount);
+        int deposit(string username, int32_t accountNumber, string password, char currency, int64_t amount);
         int withdraw(string username, string password, char currency, int64_t amount);
-        int transfer(string username, string password, char senderCurrency, 
-            int64_t amount, string recipient, char recipientCurrency);
+        int transfer(string senderUsername, int32_t senderAccountNumber, string recipientUsername, int32_t recipientAccountNumber,
+            char senderCurrency, char recipientCurrency, string password, int64_t amount);
 
     private:
         std::vector<Account> accounts;
         Account& getAccount(string username, char currency);
+        int AccountManager::accountNumberCheck(int32_t accountNumber);
         int exchangeCurrency(char fromCurrency, char toCurrency, int64_t from_amount, int64_t& to_amount);
 };
 

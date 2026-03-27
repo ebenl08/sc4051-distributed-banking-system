@@ -20,9 +20,13 @@
 
 using namespace std;
 
-Account::Account(string username, string password, char currency)
-    : username(username), password(password), currency(currency) {
-    }
+Account::Account(int32_t accountNumber, string username, string password, char currency)
+    : accountNumber(accountNumber), username(username), password(password), currency(currency) {
+}
+
+int32_t Account::getAccountNumber() const {
+    return this->accountNumber;
+}
 
 const std::string Account::getUsername() const{
     return this->username;
@@ -63,7 +67,8 @@ bool operator==(const Account& lhs, const Account& rhs){
 
 std::ostream& operator<<(std::ostream& os, const Account& account){
     
-    os  << "Username: " << account.username 
+    os  << "Account Number: " << account.accountNumber
+        << "Username: " << account.username 
         << ", Currency: " << account.getCurrencyString() 
         << ", Balance: " << account.getBalanceString();
     return os;
