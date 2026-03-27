@@ -36,9 +36,10 @@ public final class Constants {
     public static final int SERVICE_CLOSE_ACCOUNT = 2;
     public static final int SERVICE_DEPOSIT_WITHDRAW_MONEY = 3;
     public static final int SERVICE_MONITOR_UPDATE = 4;
-    public static final int SERVICE_TRANSFER_MONEY = 5;
-    public static final int SERVICE_CHANGE_PASSWORD = 6;
-    public static final int SERVICE_EXIT = 7;
+    public static final int SERVICE_VIEW_ACCOUNT = 5;
+    public static final int SERVICE_TRANSFER_MONEY = 6;
+    public static final int SERVICE_CHANGE_PASSWORD = 7;
+    public static final int SERVICE_EXIT = 8;
     
 
     private Constants() {}
