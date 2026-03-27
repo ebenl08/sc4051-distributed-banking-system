@@ -25,6 +25,7 @@ class Account{
         const int64_t getBalance() const;
         const std::string getBalanceString() const;
         void updateBalance(int64_t amount);
+        void updatePassword(string newPassword);
 
         friend bool operator==(const Account& lhs, const Account& rhs);
         friend std::ostream& operator<<(std::ostream& os, const Account& account);

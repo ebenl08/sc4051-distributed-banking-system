@@ -59,6 +59,9 @@ void Account::updateBalance(int64_t amount){
     // this is not the best way to do it but let's just do this for now
     this->balance = amount;
 }
+void Account::updatePassword(string newPassword){
+    this->password = newPassword;
+}
 
 
 bool operator==(const Account& lhs, const Account& rhs){

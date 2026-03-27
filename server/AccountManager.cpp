@@ -76,7 +76,7 @@ int AccountManager::closeAccount(string username, int32_t accountNumber, string 
             ), 
             this->accounts.end()
         );
-    } else{return 1;}
+    } else{return -1;}
     return 0;
 } 
 
@@ -112,6 +112,16 @@ int AccountManager::transfer(string senderUsername, int32_t senderAccountNumber,
     }
     return -1;
 
+}
+
+int changePassword(string username, int32_t accountNumber, string password, string newPassword){
+    Account& account = this->getAccount(username, accountNumber);
+    if(account.getPassword == password){
+        account.updatePassword(newPassword);
+        return 0;
+    } else {
+        return -1;
+    }
 }
 
 // TODO: Implement exchangeCurrency function
