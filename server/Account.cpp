@@ -1,28 +1,14 @@
 #include "Account.h"
 
-// class Account{
-    
-//     public:
-//         Account(const char* username, const char* password, const char currency);
-//         const char* getUsername();
-//         const char* getPassword();
-//         const char* getCurrencyString();
-//         const char getCurrency();
-//         const int64_t getBalance();
-//         const int64_t updateBalance(int64_t amount);
-//     private:
-//         const char* username;
-//         const char* password;
-//         const char currency;
-//         const int64_t balance = 0;
-        
-// };
-
 using namespace std;
 
-Account::Account(string username, string password, char currency)
-    : username(username), password(password), currency(currency) {
-    }
+Account::Account(int32_t accountNumber, string username, string password, char currency)
+    : accountNumber(accountNumber), username(username), password(password), currency(currency) {
+}
+
+int32_t Account::getAccountNumber() const {
+    return this->accountNumber;
+}
 
 const std::string Account::getUsername() const{
     return this->username;
@@ -55,6 +41,9 @@ void Account::updateBalance(int64_t amount){
     // this is not the best way to do it but let's just do this for now
     this->balance = amount;
 }
+void Account::updatePassword(string newPassword){
+    this->password = newPassword;
+}
 
 
 bool operator==(const Account& lhs, const Account& rhs){
@@ -63,7 +52,8 @@ bool operator==(const Account& lhs, const Account& rhs){
 
 std::ostream& operator<<(std::ostream& os, const Account& account){
     
-    os  << "Username: " << account.username 
+    os  << "Account Number: " << account.accountNumber
+        << "Username: " << account.username 
         << ", Currency: " << account.getCurrencyString() 
         << ", Balance: " << account.getBalanceString();
     return os;

@@ -21,76 +21,121 @@ AccountManager::AccountManager(){
     this->accounts = std::vector<Account>();
 }
 
-int AccountManager::addAccount(string username, string password, char currency){
-    Account* account = new Account(username, password, currency);
+int AccountManager::accountNumberCheck(int32_t accountNumber){
+    for(Account& account : this->accounts){
+        if(account.getAccountNumber() == accountNumber){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int AccountManager::addAccount(string username, string password, char currency, int32_t& accountN){
+    int32_t accountNumber = 0;
+    do{
+        for(int i=0;i<6;i++){
+            int x = rand() % 10;
+            accountNumber += x;
+            if(i != 5){accountNumber = accountNumber*10;}
+        }
+    } while(accountNumberCheck(accountNumber));
+    accountN = accountNumber;
+    Account* account = new Account(accountNumber, username, password, currency);
     this->accounts.push_back(*account);
     delete account;
     return 0;
 } 
 
-// TODO: Implement cleaner Error handling and status codes, instead of just exiting the program
-Account& AccountManager::getAccount(string username, char currency){
-    try{
-        if(this->accounts.empty())
-            throw std::runtime_error("No accounts found");
-        for(Account& account : this->accounts){
-            if(account.getUsername() == username && account.getCurrency() == currency){
-                if(DEBUG) cout << "Account found: " << account << "----> at" << &account << endl;
-                return account;
-            }
-        }
-        throw std::runtime_error("Account not found");
-    } catch(const std::exception& e){
-        std::cerr << e.what() << std::endl;
-        exit(EXIT_FAILURE);
+Account& AccountManager::getAccount(std::string username, int32_t accountNumber) {
+    if (this->accounts.empty()) {
+        throw -10;
     }
+
+    for (Account& account : this->accounts) {
+        if (account.getUsername() == username && account.getAccountNumber() == accountNumber) {
+            return account;
+        }
+    }
+
+    throw -11;
 }
 
-int AccountManager::closeAccount(string username, string password, char currency){
-    Account& account = this->getAccount(username, currency);
-    if(DEBUG) cout << "Delete Account: " << account << "----> at" << &account << endl;
-    this->accounts.erase(
-        std::remove(
-            this->accounts.begin(), 
-            this->accounts.end(), 
-            account
-        ), 
-        this->accounts.end());
-    return 0;
+int AccountManager::closeAccount(string username, int32_t accountNumber, string password){
+    try{
+        Account& account = this->getAccount(username, accountNumber);
+        if(account.getPassword == password){
+            this->accounts.erase(
+                std::remove(
+                    this->accounts.begin(), 
+                    this->accounts.end(), 
+                    account
+                ), 
+                this->accounts.end()
+            );
+        } else{return -1;}
+        return 0;
+    } catch (int err) {
+        return err
+    }
 } 
 
-int AccountManager::deposit(string username, string password, char currency, int64_t amount){
-    Account& account = this->getAccount(username, currency);
-    int64_t newBalance = account.getBalance() + amount;
-    account.updateBalance(newBalance);
-    if(DEBUG) cout << "Deposit: " << account << "----> at" << &account << endl;
-    return 0;
-}
-
-int AccountManager::withdraw(string username, string password, char currency, int64_t amount){
-    Account& account = this->getAccount(username, currency);
-    int64_t newBalance = account.getBalance() - amount;
-    account.updateBalance(newBalance);
-    if(DEBUG) cout << "Withdraw: " << account << "----> at" << &account << endl;
-    return 0;
-}
-
-int AccountManager::transfer(string username, string password, char senderCurrency, 
-    int64_t amount, string recipient, char recipientCurrency){
-
-    Account& sender = this->getAccount(username, senderCurrency);
-    if(validateAccount(sender, password) == 0){
-        Account& receiver = this->getAccount(recipient, recipientCurrency);
-        // not sure if this is the good practice but let's just do this for now
-        sender.updateBalance(sender.getBalance() - amount);
-        
-        int64_t exchangedAmount;
-        exchangeCurrency(senderCurrency, recipientCurrency, amount, exchangedAmount);
-        receiver.updateBalance(receiver.getBalance() + exchangedAmount);
+int AccountManager::depositWithdraw(string username, int32_t accountNumber, string password, char currency, int64_t amount){
+    try {
+        Account& account = this->getAccount(username, accountNumber);
+        int64_t newBalance = account.getBalance() + amount;
+        if(newBalance < 0){
+            return -1;
+        }
+        account.updateBalance(newBalance);
         return 0;
+    } catch (int err) {
+        return err
     }
-    return -1;
+}
 
+int AccountManager::transfer(string senderUsername, int32_t senderAccountNumber, string recipientUsername, int32_t recipientAccountNumber,
+            char senderCurrency, char recipientCurrency, string password, int64_t amount){
+    try {
+        Account& sender = this->getAccount(senderUsername, senderAccountNumber);
+        if(validateAccount(sender, password) == 0){
+            Account& receiver = this->getAccount(recipient, recipientAccountNumber);
+            // not sure if this is the good practice but let's just do this for now
+            sender.updateBalance(sender.getBalance() - amount);
+            
+            int64_t exchangedAmount;
+            exchangeCurrency(senderCurrency, recipientCurrency, amount, exchangedAmount);
+            receiver.updateBalance(receiver.getBalance() + exchangedAmount);
+            return 0;
+        }
+        return -1;
+    } catch (int err) {
+        return err
+    }
+}
+
+int AccountManager::changePassword(string username, int32_t accountNumber, string password, string newPassword){
+    try {
+        Account& account = this->getAccount(username, accountNumber);
+        if(account.getPassword == password){
+            account.updatePassword(newPassword);
+            return 0;
+        } else {
+            return -1;
+        }
+    } catch (int err) {
+        return err
+    }
+}
+
+int AccountManager::viewAccount(string username, int32_t accountNumber, string password, char& currency, int64_t& balance){
+    try {
+        Account& account = this->getAccount(username, accountNumber);
+        currency = account.getCurrency;
+        balance = account.getBalance;
+        return 0;
+    } catch (int err) {
+        return err
+    }
 }
 
 // TODO: Implement exchangeCurrency function
