@@ -1,15 +1,16 @@
 package client.net;
 
-import java.io.IOException;
-import java.net.*;
-
 import client.Constants;
 import client.Utils;
+import java.io.IOException;
+import java.net.*;
 
 public class Socket{
 
   private final DatagramSocket socket;
   private final InetAddress servaddr;
+  private final UDPClient communication;
+  private int port;
 
   public Socket(UDPClient communication) throws SocketException, UnknownHostException{
     this.communication = communication;
@@ -65,6 +66,12 @@ public class Socket{
     }
   }
 
+  public void send(byte[] message) throws IOException, SocketTimeoutException {
+     byte[] buffer = message;
+     DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.servaddr, this.port);
+     this.socket.send(packet);
+   }
+   
   public byte[] receive() throws IOException {
     byte[] buffer = new byte[Constants.BUFFER_SIZE];
     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

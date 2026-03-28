@@ -1,16 +1,12 @@
 package client; 
 
-import client.handle.CloseAccountHandle;
 import client.handle.DSBankingHandle;
+import client.net.UDPClient;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-import client.net.UDPClient;
-import client.net.Socket;
-import client.net.Marshalling;
-
 public class main {
-  public static void main(String[] args) {
+  public static void main(String[] args) throws SocketException, UnknownHostException {
     // try {
     //   UDPClient communication = new UDPClient();
     //   Socket client = new Socket(communication);
