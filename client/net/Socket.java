@@ -1,7 +1,6 @@
 package client.net;
 
 import client.Constants;
-import client.Utils;
 import java.io.IOException;
 import java.net.*;
 
@@ -26,46 +25,7 @@ public class Socket{
   public void setTimeoutMs(int timeoutMs) throws SocketException{
     this.socket.setSoTimeout(timeoutMs);
   }
-
-
-
-  public byte[] receiveResponse(boolean monitorMode) throws IOException {
-    while (true) {
-      byte[] buffer = new byte[Constants.BUFFER_SIZE];
-      DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-      this.socket.receive(packet);
-      byte[] payload = java.util.Arrays.copyOf(packet.getData(), packet.getLength());
-      Utils.RequestHeader header = Utils.parseRequestHeader(payload);
-      int responseId = header.requestId;
-      int bodyOffset = Constants.INT_SIZE * 3;
-
-      if (this.communication.isDebug()) {
-        System.out.println("[DEBUG] received response id=" + responseId);
-      }
-
-      UDPClient.ResponseDecision decision = this.communication.evaluateResponse(responseId, monitorMode);
-
-      if (decision.shouldAck) {
-        byte[] ackPayload = Utils.buildAckPayload(responseId);
-        DatagramPacket ackPacket = new DatagramPacket(
-            ackPayload,
-            ackPayload.length,
-            this.servaddr,
-            Constants.DEFAULT_PORT);
-        this.socket.send(ackPacket);
-      }
-
-      if (decision.duplicate) {
-        if (this.communication.isDebug()) {
-          System.out.println("Duplicate response, ACK resent");
-        }
-        continue;
-      }
-
-      return java.util.Arrays.copyOfRange(payload, bodyOffset, payload.length);
-    }
-  }
-
+  
   public void send(byte[] message) throws IOException, SocketTimeoutException {
      byte[] buffer = message;
      DatagramPacket packet = new DatagramPacket(buffer, buffer.length, this.servaddr, this.port);
