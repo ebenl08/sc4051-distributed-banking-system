@@ -43,12 +43,12 @@ int AccountManager::addAccount(string username, string password, char currency, 
     Account* account = new Account(accountNumber, username, password, currency);
     this->accounts.push_back(*account);
     delete account;
-    return 0;
+    return SUCCESS;
 } 
 
 Account& AccountManager::getAccount(std::string username, int32_t accountNumber) {
     if (this->accounts.empty()) {
-        throw -10;
+        throw ACCOUNT_NOT_FOUND;
     }
 
     for (Account& account : this->accounts) {
@@ -57,7 +57,7 @@ Account& AccountManager::getAccount(std::string username, int32_t accountNumber)
         }
     }
 
-    throw -11;
+    throw ACCOUNT_NOT_FOUND;
 }
 
 int AccountManager::closeAccount(string username, int32_t accountNumber, string password){
@@ -72,8 +72,8 @@ int AccountManager::closeAccount(string username, int32_t accountNumber, string 
                 ), 
                 this->accounts.end()
             );
-        } else{return -1;}
-        return 0;
+        } else{return INVALID_CREDENTIALS;}
+        return SUCCESS;
     } catch (int err) {
         return err
     }
@@ -84,10 +84,10 @@ int AccountManager::depositWithdraw(string username, int32_t accountNumber, stri
         Account& account = this->getAccount(username, accountNumber);
         int64_t newBalance = account.getBalance() + amount;
         if(newBalance < 0){
-            return -1;
+            return INSUFFICIENT_FUNDS;
         }
         account.updateBalance(newBalance);
-        return 0;
+        return SUCCESS;
     } catch (int err) {
         return err
     }
@@ -105,9 +105,9 @@ int AccountManager::transfer(string senderUsername, int32_t senderAccountNumber,
             int64_t exchangedAmount;
             exchangeCurrency(senderCurrency, recipientCurrency, amount, exchangedAmount);
             receiver.updateBalance(receiver.getBalance() + exchangedAmount);
-            return 0;
+            return SUCCESS;
         }
-        return -1;
+        return INVALID_CREDENTIALS;
     } catch (int err) {
         return err
     }
@@ -118,9 +118,9 @@ int AccountManager::changePassword(string username, int32_t accountNumber, strin
         Account& account = this->getAccount(username, accountNumber);
         if(account.getPassword == password){
             account.updatePassword(newPassword);
-            return 0;
+            return SUCCESS;
         } else {
-            return -1;
+            return INVALID_CREDENTIALS;
         }
     } catch (int err) {
         return err
@@ -132,7 +132,7 @@ int AccountManager::viewAccount(string username, int32_t accountNumber, string p
         Account& account = this->getAccount(username, accountNumber);
         currency = account.getCurrency;
         balance = account.getBalance;
-        return 0;
+        return SUCCESS;
     } catch (int err) {
         return err
     }
@@ -142,7 +142,7 @@ int AccountManager::viewAccount(string username, int32_t accountNumber, string p
 int AccountManager::exchangeCurrency(char fromCurrency, char toCurrency, int64_t from_amount, int64_t& to_amount){
     double exchangeRate = 1.0;
     to_amount = from_amount * exchangeRate;
-    return 0;
+    return SUCCESS;
 }
 
 int AccountManager::validateAccount(Account account, string password){

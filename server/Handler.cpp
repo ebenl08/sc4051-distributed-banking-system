@@ -15,19 +15,19 @@ int32_t Handler::service1(const vector<Argument>& args, char* respond, int& leng
     int result = accountManager.addAccount(username, password, currency, accountNumber);
     
     if(result != 0) {
-        strcpy(respond, "ERROR: account creation failed");
+        strcpy(respond, "Current balance: " + account.getBalanceString);
         length = strlen(respond);
-        return -1;
+        return INSUFFICIENT_FUNDS;
     }
 
     if(initialBalance > 0) {
         accountManager.deposit(username, password, currency, initialBalance);
     }
 
-    string msg = "SUCCESS: account created\nYour account number: " + to_string(accountNumber);
+    string msg = + to_string(accountNumber);
     strcpy(respond, msg.c_str());
     length = msg.length();
-    return 0;
+    return SUCCESS;
 }
 
 int32_t Handler::service2(const std::vector<Argument>& args, char* respond, int& length){
@@ -37,27 +37,23 @@ int32_t Handler::service2(const std::vector<Argument>& args, char* respond, int&
 
     int result = accountManager.closeAccount(name, accountNumber, password);
 
-    if(result == -10){
-        strcpy(respond, "No accounts found");
+    if(result == ACCOUNT_NOT_FOUND){
+        strcpy(respond, "");
         length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+        return ACCOUNT_NOT_FOUND;
     }
-    if(result == 0) {
-        strcpy(respond, "SUCCESS: account closed");
+    if(result == SUCCESS) {
+        strcpy(respond, "");
         length = strlen(respond);
-        return 0;
-    } else if(result == -1){
+        return SUCCESS;
+    } else if(result == INVALID_CREDENTIALS){
         strcpy(respond, "Wrong password!");
         length = strlen(respond);
-        return -1;
+        return INVALID_CREDENTIALS;
     } else {
         strcpy(respond, "ERROR: failed to close account");
         length = strlen(respond);
-        return -1;
+        return INTERNAL_ERROR;
     }
 }
 
@@ -70,29 +66,25 @@ int32_t Handler::service3(const std::vector<Argument>& args, char* respond, int&
 
     int result = accountManager.depositWithdraw(username, accountNumber, password, currency, amount);
 
-    if(result == -10){
-        strcpy(respond, "No accounts found");
+    if(result == ACCOUNT_NOT_FOUND){
+        strcpy(respond, "");
         length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+        return ACCOUNT_NOT_FOUND;
     }
-    if(result == -1) {
-        strcpy(respond, "Not sufficient fund!");
+    if(result == INSUFFICIENT_FUNDS) {
+        strcpy(respond, "Current balance: " + account.getBalanceString);
         length = strlen(respond);
-        return -1;
+        return INSUFFICIENT_FUNDS;
     } else {
         string msg;
         if(amount < 0){
-            msg = "Withdrawal successful!\nAmount of withdrawal: " + to_string(amount*-1);
+            msg = "Amount of withdrawal: " + to_string(amount*-1);
         } else {
-            msg = "Deposit successful!\nAmount of deposit: " + to_string(amount);
+            msg = "Amount of deposit: " + to_string(amount);
         }
         strcpy(respond, msg.c_str());
         length = strlen(respond);
-        return 0;
+        return SUCCESS;
     }
 }
 
@@ -109,24 +101,20 @@ int32_t Handler::service4(const std::vector<Argument>& args, char* respond, int&
     int result = accountManager.transfer(senderUsername, senderAccountNumber, recipientUsername, recipientAccountNumber, senderCurrency, 
     recipientCurrency, password, amount);
     
-    if(result == -10){
-        strcpy(respond, "No accounts found");
+    if(result == ACCOUNT_NOT_FOUND){
+        strcpy(respond, "");
         length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+        return ACCOUNT_NOT_FOUND;
     }
-    if(result == 0) {
-        string msg = "Transaction successful!\nAmount of money send to " + to_string(recipientUsername) + ": " + to_string(amount);
+    if(result == SUCCESS) {
+        string msg = "Amount of money send to " + to_string(recipientUsername) + ": " + to_string(amount);
         strcpy(respond, msg.c_str());
         length = msg.length();
-        return 0;
-    } else if(result == -1) {
-        strcpy(respond, "Transaction failed!");
+        return SUCCESS;
+    } else if(result == INVALID_CREDENTIALS) {
+        strcpy(respond, "Wrong password!");
         length = strlen(respond);
-        return -1;
+        return INVALID_CREDENTIALS;
     }
 }
 
@@ -138,14 +126,10 @@ int32_t Handler::service5(const std::vector<Argument>& args, char* respond, int&
     int64_t balance;
 
     int result = accountManager.viewAccount(username, accountNumber, password, currency, balance);
-    if(result == -10){
-        strcpy(respond, "No accounts found");
+    if(result == ACCOUNT_NOT_FOUND){
+        strcpy(respond, "");
         length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+        return ACCOUNT_NOT_FOUND;
     }
     string msg = "Account Number: " + to string(accountNumber) + "
                 \nUsername: " + username + "
@@ -153,7 +137,7 @@ int32_t Handler::service5(const std::vector<Argument>& args, char* respond, int&
                 \nBalance: " + to_string(balance);
     strcpy(respond, msg.c_str());
     length = msg.length();
-    return 0;
+    return SUCCESS;
 }
 
 int32_t Handler::service6(const std::vector<Argument>& args, char* respond, int& length){
@@ -175,7 +159,7 @@ int32_t Handler::service6(const std::vector<Argument>& args, char* respond, int&
 
     strcpy(respond, "SUCCESS: monitor registered");
     length = strlen(respond);
-    return 0;
+    return SUCCESS;
 }
 
 int32_t Handler::service7(const std::vector<Argument>& args, char* respond, int& length){
@@ -186,22 +170,18 @@ int32_t Handler::service7(const std::vector<Argument>& args, char* respond, int&
     
     result = accountManager.changePassword(username, accountNumber, password, newPassword);
 
-    if(result == -10){
-        strcpy(respond, "No accounts found");
+    if(result == ACCOUNT_NOT_FOUND){
+        strcpy(respond, "");
         length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+        return ACCOUNT_NOT_FOUND;
     }
-    if(result == 0) {
-        strcpy(respond, "SUCCESS: password has been changed.");
+    if(result == SUCCESS) {
+        strcpy(respond, "");
         length = strlen(respond);
-        return 0;
-    } else if (result == -1) {
-        strcpy(respond, "ERROR: password change failed");
+        return SUCCESS;
+    } else if (result == INVALID_CREDENTIALS) {
+        strcpy(respond, "Wrong password!");
         length = strlen(respond);
-        return -1;
+        return INVALID_CREDENTIALS;
     }
 }
