@@ -75,7 +75,7 @@ int AccountManager::closeAccount(string username, int32_t accountNumber, string 
         } else{return INVALID_CREDENTIALS;}
         return SUCCESS;
     } catch (int err) {
-        return err
+        return err;
     }
 } 
 
@@ -89,7 +89,7 @@ int AccountManager::depositWithdraw(string username, int32_t accountNumber, stri
         account.updateBalance(newBalance);
         return SUCCESS;
     } catch (int err) {
-        return err
+        return err;
     }
 }
 
@@ -97,8 +97,11 @@ int AccountManager::transfer(string senderUsername, int32_t senderAccountNumber,
             char senderCurrency, char recipientCurrency, string password, int64_t amount){
     try {
         Account& sender = this->getAccount(senderUsername, senderAccountNumber);
+        if(sender.getBalance() < amount){
+            return INSUFFICIENT_FUNDS;
+        }
         if(validateAccount(sender, password) == 0){
-            Account& receiver = this->getAccount(recipient, recipientAccountNumber);
+            Account& receiver = this->getAccount(recipientUsernamecipientAccountNumber);
             // not sure if this is the good practice but let's just do this for now
             sender.updateBalance(sender.getBalance() - amount);
             
@@ -109,7 +112,7 @@ int AccountManager::transfer(string senderUsername, int32_t senderAccountNumber,
         }
         return INVALID_CREDENTIALS;
     } catch (int err) {
-        return err
+        return err;
     }
 }
 
@@ -123,7 +126,7 @@ int AccountManager::changePassword(string username, int32_t accountNumber, strin
             return INVALID_CREDENTIALS;
         }
     } catch (int err) {
-        return err
+        return err;
     }
 }
 
@@ -134,7 +137,7 @@ int AccountManager::viewAccount(string username, int32_t accountNumber, string p
         balance = account.getBalance;
         return SUCCESS;
     } catch (int err) {
-        return err
+        return err;
     }
 }
 

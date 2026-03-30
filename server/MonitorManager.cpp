@@ -1,6 +1,7 @@
 #include "MonitorManager.h"
 
 #include <algorithm>
+#include <cstring>
 
 MonitorManager::MonitorManager() {}
 
@@ -40,6 +41,39 @@ void MonitorManager::removeExpiredClients() {
         ),
         clients.end()
     );
+}
+
+int MonitorManager::buildCallbackPacket(char* buffer, const std::string& message) {
+    int counter = 0;
+
+    // reqID = 0 for server callback
+    Marshalling::marshal(buffer + counter, (int32_t)0);
+    counter += 4;
+
+    // serviceID = 0xFFFF means monitor callback
+    Marshalling::marshal(buffer + counter, (int32_t)0xFFFF);
+    counter += 4;
+
+    // statusCode = SUCCESS
+    Marshalling::marshal(buffer + counter, (int32_t)SUCCESS);
+    counter += 4;
+
+    // payload = string message
+    Marshalling::marshal(buffer + counter, message.c_str());
+    counter += 4 + message.length();
+
+    return counter;
+}
+
+void MonitorManager::notifyAll(Socket& sock, const std::string& message) {
+    removeExpiredClients();
+
+    char packet[BUFFER_SIZE];
+    int length = buildCallbackPacket(packet, message);
+
+    for (const MonitorClient& client : clients) {
+        sock.send(packet, length, client.addr);
+    }
 }
 
 std::vector<MonitorManager::MonitorClient>& MonitorManager::getClients() {
