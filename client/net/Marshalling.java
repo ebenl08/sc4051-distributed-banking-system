@@ -38,6 +38,8 @@ public class Marshalling {
 
   public static byte[] marshal(String value){
     byte[] buffer = new byte[4 + value.length()];
+    byte[] lengthBytes = marshal(value.length());
+    System.arraycopy(lengthBytes, 0, buffer, 0, 4);
     
     for(int i = 0; i < value.length(); i++){
       buffer[i + 4] = (byte) value.charAt(i);

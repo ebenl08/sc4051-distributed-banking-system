@@ -11,12 +11,12 @@
 
 #include <string>
 
-#include "Constant.h"
+#include "server/Constant.h"
 
 class Account{
     
     public:
-        Account(std::string username, std::string password, char currency);
+        Account(int32_t accountNumber, std::string username, std::string password, char currency);
         int32_t getAccountNumber() const;
         const std::string getUsername() const;
         const std::string getPassword() const;
@@ -25,7 +25,7 @@ class Account{
         const int64_t getBalance() const;
         const std::string getBalanceString() const;
         void updateBalance(int64_t amount);
-        void updatePassword(string newPassword);
+        void updatePassword(std::string newPassword);
 
         friend bool operator==(const Account& lhs, const Account& rhs);
         friend std::ostream& operator<<(std::ostream& os, const Account& account);

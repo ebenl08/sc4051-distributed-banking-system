@@ -1,4 +1,4 @@
-#include "Account.h"
+#include "server/Account.h"
 
 using namespace std;
 
@@ -18,12 +18,10 @@ const std::string Account::getPassword() const{
 }
 const std::string Account::getCurrencyString() const{
     switch(this->currency){
-        case SGD:
-            return "SGD";
-        case USD:
-            return "USD";
-        default:
-            return "Unknown Currency";
+        case SGD: return "SGD";
+        case USD: return "USD";
+        case EUR: return "EUR";
+        default:  return "Unknown Currency";
     }
 }
 const char Account::getCurrency() const{
@@ -44,7 +42,6 @@ void Account::updateBalance(int64_t amount){
 void Account::updatePassword(string newPassword){
     this->password = newPassword;
 }
-
 
 bool operator==(const Account& lhs, const Account& rhs){
     return lhs.username == rhs.username && lhs.currency == rhs.currency;

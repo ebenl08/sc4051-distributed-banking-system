@@ -27,7 +27,7 @@ public class UDPClient {
     private int maxRetry;
     private boolean debug;
 
-    private final Map<Integer, Boolean> responseIdHistory;
+    private final Map<Integer, Boolean> requestIdHistory;
     private final Socket socket;
     
     private ServiceSchema serviceSchema;
@@ -38,7 +38,7 @@ public class UDPClient {
     
     public UDPClient() throws SocketException, UnknownHostException {
         this.requestIdCounter = 0;
-        this.responseIdHistory = new HashMap<>();
+        this.requestIdHistory = new HashMap<>();
         
         this.semanticInvoc = Constants.NO_SEM_INVO;
         this.timeoutMs = Constants.DEFAULT_TIMEOUT;
@@ -62,7 +62,7 @@ public class UDPClient {
         this.socket.setTimeoutMs(timeoutMs);
         this.debug = debug;
         this.requestIdCounter = 0;
-        this.responseIdHistory = new HashMap<>();
+        this.requestIdHistory = new HashMap<>();
     }
 
     // Getters
@@ -110,13 +110,11 @@ public class UDPClient {
         this.debug = debug;
     }
 
-
-    public boolean isDuplicateResponse(int responseId) {
-        return isSemanticInvocAtMostOne() && 
-            this.responseIdHistory.getOrDefault(responseId, false);
+    public boolean isDuplicateRequest(int requestId) {
+        return this.requestIdHistory.getOrDefault(requestId, false);
     }
-    public boolean isResponseOutdated(int responseId) {
-        return responseId < this.requestIdCounter;
+    public boolean isRequestOutdated(int requestId) {
+        return requestId < this.requestIdCounter;
     }
 
 
@@ -130,6 +128,14 @@ public class UDPClient {
             }
         }
     }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }   
     
     public Response sendRequest(int serviceId, Args[] args) throws IOException, TimeoutException {
         
@@ -139,6 +145,7 @@ public class UDPClient {
         int requestId = getRequestId();
         Request request = new Request(requestId, serviceId, args);
         byte[] requestBytes = PacketUtils.buildRequestMessage(request);
+        System.out.println(bytesToHex(requestBytes));
         
         int retryCount = 0;
         byte[] response = null;
@@ -159,13 +166,13 @@ public class UDPClient {
         return PacketUtils.parseResponseMessage(response, this.serviceSchema);
     }
 
-    public void checkResponse(Response response) {
-        int responseId = response.responseId;
-        if (isDuplicateResponse(responseId)) {
-            if(debug) {System.out.println("Received duplicate response with ID: " + responseId);}
+    public void checkRequest(Response response) {
+        int requestId = response.responseId;
+        if (isDuplicateRequest(requestId)) {
+            if(debug) {System.out.println("Received duplicate request with ID: " + requestId);}
             return;
         }
-        this.responseIdHistory.put(responseId, true);
+        this.requestIdHistory.put(requestId, true);
     }
 
     public void monitorServer(Callback callback) throws IOException, InterruptedException {
@@ -175,14 +182,15 @@ public class UDPClient {
                 byte[] callbackMessage = this.socket.receive();
                 Request callbackRequest = PacketUtils.parseCallbackMessage(callbackMessage);
 
-                int responseId = callbackRequest.requestId;
-                if(isDuplicateResponse(callbackRequest.requestId) 
-                        && isResponseOutdated(responseId)) {
+                int callbackId = callbackRequest.requestId;
+                if( isSemanticInvocAtMostOne()
+                        && (isDuplicateRequest(callbackId) 
+                        || isRequestOutdated(callbackId))){
                     if(debug){System.out.println("Received duplicate callback request with ID: " + callbackRequest.requestId);}
                     continue;
                 }else {
-                    this.responseIdHistory.put(callbackRequest.requestId, true);
-                    responseIdHistory.put(callbackRequest.requestId, true);   
+                    this.requestIdHistory.put(callbackRequest.requestId, true);
+                    requestIdHistory.put(callbackRequest.requestId, true);   
                     callback.onCallback(callbackRequest);
                 }
 
@@ -198,7 +206,7 @@ public class UDPClient {
                 byte[] responseBytes = PacketUtils.buildResponseMessage(callbackResponse);
                 this.socket.send(responseBytes);
             } catch (SocketTimeoutException e) {
-                continue;
+                continue; // Continue waiting for callbacks
             }
         }
     }

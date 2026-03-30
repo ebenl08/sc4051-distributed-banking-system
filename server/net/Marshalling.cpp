@@ -1,5 +1,5 @@
 
-#include "Marshalling.h"
+#include "server/net/Marshalling.h"
 
 
 void Marshalling::marshal(char* buffer, int32_t value){
@@ -15,7 +15,7 @@ void Marshalling::marshal(char* buffer, int32_t value){
 void Marshalling::marshal(char* buffer, int64_t value){
   value = htonll(value);
   char* ptr = buffer;
-  memset(buffer, 0, sizeof(int32_t));
+  memset(buffer, 0, sizeof(int64_t));
   *ptr |= value>>56; ++ptr;
   *ptr |= value>>48; ++ptr;
   *ptr |= value>>40; ++ptr;
@@ -34,6 +34,10 @@ void Marshalling::marshal(char* buffer, const char* value){
   int32_t length = strlen(value);
   memcpy(buffer, &length, sizeof(int32_t));
   memcpy(buffer + 4, value, length);
+}
+
+void Marshalling::marshal(char* buffer, char value){
+  marshal(buffer, &value);
 }
 
 int32_t Marshalling::unmarshalInt32(char* buffer){
@@ -61,6 +65,10 @@ float Marshalling::unmarshalFloat(char* buffer){
   // char tmpbuffer[4] = { buffer[3], buffer[2], buffer[1], buffer[0]};
   memcpy(&value, buffer, sizeof(value));
   return value;
+}
+
+char Marshalling::unmarshalChar(char* buffer){
+  return buffer[0];
 }
 
 char* Marshalling::unmarshalString(char* buffer){

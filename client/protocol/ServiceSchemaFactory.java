@@ -25,7 +25,7 @@ public class ServiceSchemaFactory {
                 return new ServiceSchema(
                     new Args.Type[]{
                         Args.Type.STRING, // name
-                        Args.Type.STRING, // account#
+                        Args.Type.INT32, // account#
                         Args.Type.STRING  // passw
                     },
                     new Args.Type[]{} // response
@@ -36,7 +36,7 @@ public class ServiceSchemaFactory {
                 return new ServiceSchema(
                     new Args.Type[]{
                         Args.Type.STRING, // name
-                        Args.Type.STRING, // account#
+                        Args.Type.INT32, // account#
                         Args.Type.STRING, // passw
                         Args.Type.CHAR,   // currency
                         Args.Type.INT64   // amount
@@ -51,9 +51,9 @@ public class ServiceSchemaFactory {
                 return new ServiceSchema(
                     new Args.Type[]{
                         Args.Type.STRING, // name1
-                        Args.Type.STRING, // account#1
+                        Args.Type.INT32, // account#1
                         Args.Type.STRING, // name2
-                        Args.Type.STRING, // account#2
+                        Args.Type.INT32, // account#2
                         Args.Type.CHAR,   // currency1
                         Args.Type.CHAR,   // currency2
                         Args.Type.STRING, // passw1
@@ -62,7 +62,9 @@ public class ServiceSchemaFactory {
                     new Args.Type[]{
                         Args.Type.STRING, // name2
                         Args.Type.INT32,  // account#2
-                        Args.Type.INT64,  // amount
+                        Args.Type.CHAR,   // currency2
+                        Args.Type.FLOAT,  // exchange rate
+                        Args.Type.INT64   // recipient new balance
                     }
                 );
 
@@ -72,7 +74,7 @@ public class ServiceSchemaFactory {
                 return new ServiceSchema(
                     new Args.Type[]{
                         Args.Type.STRING, // name
-                        Args.Type.STRING, // account#
+                        Args.Type.INT32, // account#
                         Args.Type.STRING, // passw
                         Args.Type.STRING, // newpassw
                     },
@@ -84,11 +86,11 @@ public class ServiceSchemaFactory {
                 return new ServiceSchema(
                     new Args.Type[]{
                         Args.Type.STRING, // name
-                        Args.Type.STRING, // account#
+                        Args.Type.INT32, // account#
                         Args.Type.STRING  // passw
                     }, 
                     new Args.Type[]{
-                        Args.Type.STRING, // account#
+                        Args.Type.INT32, // account#
                         Args.Type.STRING, // name
                         Args.Type.CHAR,   // currency
                         Args.Type.INT64   // balance

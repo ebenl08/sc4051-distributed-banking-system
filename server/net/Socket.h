@@ -1,5 +1,5 @@
-#ifndef SOKET_H
-#define SOKET_H
+#ifndef SERVER_NET_SOCKET_H
+#define SERVER_NET_SOCKET_H
 
 #include <sys/types.h>      // System data type. e.g. size_t, ssize_t
 #include <sys/socket.h>     // main library for creating sockets
@@ -21,13 +21,11 @@ class Socket{
   public:
     Socket(int16_t port, const char* hostname);
     void send(const char* buffer, int size, const sockaddr_in clientaddr);
-    sockaddr_in receive(char* buffer);
+    int receive(char* buffer, sockaddr_in& clientaddr);
   private:
     void makeAddress(sockaddr_in* addr, const char* hostname, int16_t port);
     int servsocket;
     sockaddr_in servaddr;
-    int semantic_invoc;
-    int msg_id_counter;
 };
 
 #endif

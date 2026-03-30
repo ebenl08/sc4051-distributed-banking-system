@@ -8,10 +8,10 @@
 #include <string>
 #include <arpa/inet.h>
 
-#include "UDPServer.h"
-#include "Marshalling.h"
-#include "Socket.h"
-#include "Handler.h"
+#include "server/net/UDPServer.h"
+#include "server/net/Marshalling.h"
+#include "server/net/Socket.h"
+#include "server/Handler.h"
 
 using namespace std;
 

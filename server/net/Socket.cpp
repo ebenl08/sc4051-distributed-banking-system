@@ -1,4 +1,4 @@
-#include "Socket.h"
+#include "server/net/Socket.h"
 
 
 Socket::Socket(int16_t port, const char* hostname){
@@ -26,21 +26,17 @@ void Socket::send(const char* buffer, int length, const sockaddr_in clientaddr){
   sendto(this->servsocket, buffer, length, 0, (const sockaddr*) &clientaddr, len);
 }
 
-sockaddr_in Socket::receive(char* buffer){
-  sockaddr_in clientaddr;
+int Socket::receive(char* buffer, sockaddr_in& clientaddr){
   socklen_t clientlen = sizeof(clientaddr);
 
   int n = recvfrom(this->servsocket, (void *) buffer, BUFFER_SIZE, 0, (sockaddr *) &clientaddr, &clientlen);
   if(n < 0){
     perror("Failed to receive message");
-    return clientaddr;
+    return -1;
   }
 
-  return clientaddr;
+  return n;
 }
-
-
-
 
 void Socket::makeAddress(sockaddr_in* addr, const char* hostname, int16_t port){
   struct hostent *host;

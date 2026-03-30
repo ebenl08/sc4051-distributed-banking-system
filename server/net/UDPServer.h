@@ -1,0 +1,75 @@
+#ifndef SERVER_NET_UDPSERVER_H
+#define SERVER_NET_UDPSERVER_H
+
+#include <sys/types.h>      // System data type. e.g. size_t, ssize_t
+#include <sys/socket.h>     // main library for creating sockets
+#include <netdb.h>          // include byte-ordering, address lookup functions
+#include <netinet/in.h>     // dictates how IP addresses and ports are formatted, e.g. struct sockaddr_in, etc.
+#include <arpa/inet.h> 
+
+#include <cstdio>
+#include <cstdlib>          // for exit() function
+#include <cstring>
+#include <unistd.h>
+#include <iostream>
+#include <vector> 
+
+#include "server/net/Marshalling.h"
+#include "server/Handler.h"
+#include "server/Constant.h"
+
+#define BUFFER_SIZE 1500
+
+typedef struct {
+    int32_t semanticInvoc;
+    int32_t maxRetry;
+    bool debug;
+    Socket* socket;
+} serverConfig;
+
+struct MapKey {
+    int32_t reqID;
+    uint64_t networkaddr;
+    bool operator==(const MapKey& other) const {
+        return reqID == other.reqID && networkaddr == other.networkaddr;
+    }
+};
+
+struct MapKeyHasher {
+    std::size_t operator()(const MapKey& k) const {
+        return std::hash<int32_t>()(k.reqID) ^ (std::hash<uint64_t>()(k.networkaddr) << 1);
+    }
+};
+
+
+class UDPServer{
+  public:
+    Handler handler;  
+
+    UDPServer(serverConfig config);
+    UDPServer();
+
+    int32_t startServer();
+    int32_t serveRequest(char* buffer, char* response, sockaddr_in& clientaddr);
+    std::vector<Argument> parseArgs(char* buffer, int& counter, const std::vector<DataType>& schema);
+
+  private:
+    // Network Session Layer
+    int32_t semanticInvoc = AT_LEAST_ONE_SEM_INVO;
+    int32_t requestIdCounter = 0;
+    int32_t maxRetry = 3;
+    bool debug = false;
+    Socket& socket;
+    
+    std::unordered_map<MapKey, Response, MapKeyHasher> request_client_map; // Map request ID to client address
+    std::unordered_map<uint64_t, int32_t> latest_request_map; // Map client address to latest request ID
+
+    MapKey generateMapKey(const sockaddr_in& clientaddr, int32_t requestId);
+    uint64_t generateNetworkKey(const sockaddr_in& clientaddr);
+
+    bool isDuplicateRequest(const sockaddr_in& clientaddr, int32_t reqID);
+    bool isOutdatedRequest(const sockaddr_in& clientaddr, int32_t reqID);
+};
+
+#endif
+

@@ -1,9 +1,12 @@
-#include "MonitorManager.h"
+#include "server/MonitorManager.h"
+#include "server/net/PacketBuilder.h"
+#include "server/protocol/Packet.h"
+
 
 #include <algorithm>
 #include <cstring>
 
-MonitorManager::MonitorManager() {}
+MonitorManager::MonitorManager(Socket socket) : sock(socket) {}
 
 bool MonitorManager::isSameClient(const sockaddr_in& a, const sockaddr_in& b) const {
     return a.sin_addr.s_addr == b.sin_addr.s_addr &&
@@ -43,33 +46,21 @@ void MonitorManager::removeExpiredClients() {
     );
 }
 
-int MonitorManager::buildCallbackPacket(char* buffer, const std::string& message) {
-    int counter = 0;
+int32_t MonitorManager::buildCallbackPacket(char* buffer, const std::string& message) {
 
-    // reqID = 0 for server callback
-    Marshalling::marshal(buffer + counter, (int32_t)0);
-    counter += 4;
-
-    // serviceID = 0xFFFF means monitor callback
-    Marshalling::marshal(buffer + counter, (int32_t)0xFFFF);
-    counter += 4;
-
-    // statusCode = SUCCESS
-    Marshalling::marshal(buffer + counter, (int32_t)SUCCESS);
-    counter += 4;
-
-    // payload = string message
-    Marshalling::marshal(buffer + counter, message.c_str());
-    counter += 4 + message.length();
-
-    return counter;
+    Request request;
+    request.reqID = 0;
+    request.serviceID = SERVICE_MONITOR_LIVE; // Special service ID for monitor callbacks
+    request.args.push_back(Argument(message.c_str()));
+    int32_t length = PacketBuilder::buildCallbackPacket(buffer, request);
+    return length;
 }
 
-void MonitorManager::notifyAll(Socket& sock, const std::string& message) {
+void MonitorManager::notifyAll(const std::string& message) {
     removeExpiredClients();
 
     char packet[BUFFER_SIZE];
-    int length = buildCallbackPacket(packet, message);
+    int32_t length = buildCallbackPacket(packet, message);
 
     for (const MonitorClient& client : clients) {
         sock.send(packet, length, client.addr);
