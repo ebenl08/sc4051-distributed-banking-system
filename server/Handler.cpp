@@ -5,6 +5,16 @@ void Handler::setCurrentClientAddr(const sockaddr_in& clientaddr) {
     hasCurrentClientAddr = true;
 }
 
+void Handler::setSocket(Socket* sock) {
+    serverSocket = sock;
+}
+
+void Handler::notifyMonitorClients(const std::string& message) {
+    if (serverSocket != nullptr) {
+        monitorManager.notifyAll(*serverSocket, message);
+    }
+}
+
 int32_t Handler::service1(const vector<Argument>& args, char* respond, int& length){
     string username = args[0].stringValue;
     string password = args[1].stringValue;
@@ -13,21 +23,30 @@ int32_t Handler::service1(const vector<Argument>& args, char* respond, int& leng
     int32_t accountNumber;
     
     int result = accountManager.addAccount(username, password, currency, accountNumber);
+
+    int counter = 0;
+
+    if(result != SUCCESS){
+        const char* msg = "Account creation failed!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return result;
+    }
+
+    if(initialBalance > 0){
+        accountManager.depositWithdraw(username, password, currency, initialBalance);
+    }
     
-    if(result != 0) {
-        strcpy(respond, "ERROR: account creation failed");
-        length = strlen(respond);
-        return -1;
-    }
+    string msg = to_string(accountNumber);
+    Marshalling::marshal(respond + counter, msg.c_str());
+    counter += 4 + msg.length();
+    length = counter;
 
-    if(initialBalance > 0) {
-        accountManager.deposit(username, password, currency, initialBalance);
-    }
+    string msgMonitor = "Account created: " + to_string(accountNumber);
+    notifyMonitorClients(msgMonitor);
 
-    string msg = "SUCCESS: account created\nYour account number: " + to_string(accountNumber);
-    strcpy(respond, msg.c_str());
-    length = msg.length();
-    return 0;
+    return SUCCESS;
 }
 
 int32_t Handler::service2(const std::vector<Argument>& args, char* respond, int& length){
@@ -37,28 +56,32 @@ int32_t Handler::service2(const std::vector<Argument>& args, char* respond, int&
 
     int result = accountManager.closeAccount(name, accountNumber, password);
 
-    if(result == -10){
-        strcpy(respond, "No accounts found");
-        length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+    int counter = 0;
+
+    if(result == SUCCESS){
+        length = 0;
+        string msgMonitor = "Account closed: " + to_string(accountNumber);
+        notifyMonitorClients(msgMonitor);
+        return SUCCESS;
+    } else if(result == ACCOUNT_NOT_FOUND){
+        const char* msg = "Account not found!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return ACCOUNT_NOT_FOUND;
+    } else if(result == INVALID_CREDENTIALS){
+        const char* msg = "Wrong password!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return INVALID_CREDENTIALS;
     }
-    if(result == 0) {
-        strcpy(respond, "SUCCESS: account closed");
-        length = strlen(respond);
-        return 0;
-    } else if(result == -1){
-        strcpy(respond, "Wrong password!");
-        length = strlen(respond);
-        return -1;
-    } else {
-        strcpy(respond, "ERROR: failed to close account");
-        length = strlen(respond);
-        return -1;
-    }
+
+    const char* msg = "Internal error!";
+    Marshalling::marshal(respond + counter, msg);
+    counter += 4 + strlen(msg);
+    length = counter;
+    return INTERNAL_ERROR;
 }
 
 int32_t Handler::service3(const std::vector<Argument>& args, char* respond, int& length){
@@ -70,35 +93,50 @@ int32_t Handler::service3(const std::vector<Argument>& args, char* respond, int&
 
     int result = accountManager.depositWithdraw(username, accountNumber, password, currency, amount);
 
-    if(result == -10){
-        strcpy(respond, "No accounts found");
-        length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+    int counter = 0;
+
+    if(result == ACCOUNT_NOT_FOUND){
+        const char* msg = "Account not found!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return ACCOUNT_NOT_FOUND;
+    } else if(result == INSUFFICIENT_FUNDS){
+        const char* msg = "Insufficient balance!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return INSUFFICIENT_FUNDS;
     }
-    if(result == -1) {
-        strcpy(respond, "Not sufficient fund!");
-        length = strlen(respond);
-        return -1;
+
+    string msg;
+    string msgMonitor
+    if(amount < 0){
+        msg = "Amount of withdrawal: " + to_string(-amount);
+        msgMonitor = "Account " + to_string(accountNumber) + " withdrawed: " + to_string(amount);
     } else {
-        string msg;
-        if(amount < 0){
-            msg = "Withdrawal successful!\nAmount of withdrawal: " + to_string(amount*-1);
-        } else {
-            msg = "Deposit successful!\nAmount of deposit: " + to_string(amount);
-        }
-        strcpy(respond, msg.c_str());
-        length = strlen(respond);
-        return 0;
+        msg = "Amount of deposit: " + to_string(amount);
+        msgMonitor = "Account " + to_string(accountNumber) + " deposited: " + to_string(amount);
     }
+
+    int64_t newBalance = accountManager.getBalance(username, accountNumber, password, currency);
+
+    Marshalling::marshal(respond + counter, msg.c_str());
+    counter += 4 + msg.length();
+
+    Marshalling::marshal(respond + counter, newBalance);
+    counter += 8;
+
+    length = counter;
+    
+    notifyMonitorClients(msgMonitor);
+
+    return SUCCESS;
 }
 
 int32_t Handler::service4(const std::vector<Argument>& args, char* respond, int& length){
     string senderUsername = args[0].stringValue;
-    int32_t senderAccountNumber = args[2].int32Value;
+    int32_t senderAccountNumber = args[1].int32Value;
     string recipientUsername = args[2].stringValue;
     int32_t recipientAccountNumber = args[3].int32Value;
     char senderCurrency = args[4].stringValue;
@@ -109,25 +147,50 @@ int32_t Handler::service4(const std::vector<Argument>& args, char* respond, int&
     int result = accountManager.transfer(senderUsername, senderAccountNumber, recipientUsername, recipientAccountNumber, senderCurrency, 
     recipientCurrency, password, amount);
     
-    if(result == -10){
-        strcpy(respond, "No accounts found");
-        length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+    int counter = 0;
+
+    if(result == SUCCESS){
+        string msg = "Amount of money sent to " + recipientUsername + ": " + to_string(amount);
+
+        Marshalling::marshal(respond + counter, recipientUsername.c_str());
+        counter += 4 + recipientUsername.length();
+
+        Marshalling::marshal(respond + counter, recipientAccountNumber);
+        counter += 4;
+
+        Marshalling::marshal(respond + counter, amount);
+        counter += 8;
+
+        Marshalling::marshal(respond + counter, msg.c_str());
+        counter += 4 + msg.length();
+
+        length = counter;
+        return SUCCESS;
+    } else if(result == ACCOUNT_NOT_FOUND){
+        const char* msg = "Account not found!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return ACCOUNT_NOT_FOUND;
+    } else if(result == INVALID_CREDENTIALS){
+        const char* msg = "Wrong password!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return INVALID_CREDENTIALS;
+    } else if(result == INSUFFICIENT_FUNDS){
+        const char* msg = "Insufficient balance!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return INSUFFICIENT_FUNDS;
     }
-    if(result == 0) {
-        string msg = "Transaction successful!\nAmount of money send to " + to_string(recipientUsername) + ": " + to_string(amount);
-        strcpy(respond, msg.c_str());
-        length = msg.length();
-        return 0;
-    } else if(result == -1) {
-        strcpy(respond, "Transaction failed!");
-        length = strlen(respond);
-        return -1;
-    }
+
+    const char* msg = "Internal error!";
+    Marshalling::marshal(respond + counter, msg);
+    counter += 4 + strlen(msg);
+    length = counter;
+    return INTERNAL_ERROR;
 }
 
 int32_t Handler::service5(const std::vector<Argument>& args, char* respond, int& length){
@@ -138,44 +201,63 @@ int32_t Handler::service5(const std::vector<Argument>& args, char* respond, int&
     int64_t balance;
 
     int result = accountManager.viewAccount(username, accountNumber, password, currency, balance);
-    if(result == -10){
-        strcpy(respond, "No accounts found");
-        length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+
+    int counter = 0;
+
+    if(result == SUCCESS){
+        Marshalling::marshal(respond + counter, balance);
+        counter += 8;
+
+        length = counter;
+        return SUCCESS;
+    } else if(result == ACCOUNT_NOT_FOUND){
+        const char* msg = "Account not found!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+
+        length = counter;
+        return ACCOUNT_NOT_FOUND;
+    } else if(result == INVALID_CREDENTIALS){
+        const char* msg = "Wrong password!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+
+        length = counter;
+        return INVALID_CREDENTIALS;
     }
-    string msg = "Account Number: " + to string(accountNumber) + "
-                \nUsername: " + username + "
-                \nCurrency: " + to_string(currency) + "
-                \nBalance: " + to_string(balance);
-    strcpy(respond, msg.c_str());
-    length = msg.length();
-    return 0;
+
+    const char* msg = "Internal error!";
+    Marshalling::marshal(respond + counter, msg);
+    counter += 4 + strlen(msg);
+
+    length = counter;
+    return INTERNAL_ERROR;
 }
 
-int32_t Handler::service6(const std::vector<Argument>& args, char* respond, int& length){
+int32_t Handler::service6(const std::vector<Argument>& args, char* respond, int& length) {
     int32_t interval = args[0].int32Value;
+    int counter = 0;
 
-    if(interval <= 0){
-        strcpy(respond, "ERROR: invalid monitor interval");
-        length = strlen(respond);
+    if (interval <= 0) {
+        const char* msg = "ERROR: invalid monitor interval";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
         return -1;
     }
 
-    if(!hasCurrentClientAddr){
-        strcpy(respond, "ERROR: client address not set");
-        length = strlen(respond);
+    if (!hasCurrentClientAddr) {
+        const char* msg = "ERROR: client address not set";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
         return -1;
     }
 
     monitorManager.registerClient(currentClientAddr, interval);
 
-    strcpy(respond, "SUCCESS: monitor registered");
-    length = strlen(respond);
-    return 0;
+    length = 0;
+    return SUCCESS;
 }
 
 int32_t Handler::service7(const std::vector<Argument>& args, char* respond, int& length){
@@ -184,24 +266,28 @@ int32_t Handler::service7(const std::vector<Argument>& args, char* respond, int&
     string password = args[2].stringValue;
     string newPassword = args[3].stringValue;
     
-    result = accountManager.changePassword(username, accountNumber, password, newPassword);
+    int counter = 0;
 
-    if(result == -10){
-        strcpy(respond, "No accounts found");
-        length = strlen(respond);
-        return -1
-    } else if(result == -11){
-        strcpy(respond, "Account not found");
-        length = strlen(respond);
-        return -1
+    if(result == SUCCESS){
+        length = 0;
+        return SUCCESS;
+    } else if(result == ACCOUNT_NOT_FOUND){
+        const char* msg = "Account not found!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return ACCOUNT_NOT_FOUND;
+    } else if(result == INVALID_CREDENTIALS){
+        const char* msg = "Wrong password!";
+        Marshalling::marshal(respond + counter, msg);
+        counter += 4 + strlen(msg);
+        length = counter;
+        return INVALID_CREDENTIALS;
     }
-    if(result == 0) {
-        strcpy(respond, "SUCCESS: password has been changed.");
-        length = strlen(respond);
-        return 0;
-    } else if (result == -1) {
-        strcpy(respond, "ERROR: password change failed");
-        length = strlen(respond);
-        return -1;
-    }
+
+    const char* msg = "Internal error!";
+    Marshalling::marshal(respond + counter, msg);
+    counter += 4 + strlen(msg);
+    length = counter;
+    return INTERNAL_ERROR;
 }

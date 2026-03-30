@@ -36,7 +36,7 @@ std::vector<Argument> UDPServer::parseArgs(char* buffer, int& counter, const std
     return args;
 }
 
-void UDPServer::Server(char* buffer, char* respond, int& length){
+int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
     int32_t reqID = Marshalling::unmarshalInt32(buffer);
     int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
     int32_t statusCode = Marshalling::unmarshalInt32(buffer + 8);
@@ -112,4 +112,6 @@ void UDPServer::Server(char* buffer, char* respond, int& length){
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
         statusCode = service7(args, respond, length);
+    }
+    return statusCode;
 }

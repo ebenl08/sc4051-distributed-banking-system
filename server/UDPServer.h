@@ -74,7 +74,7 @@ class UDPServer{
   public:
     UDPServer();
 
-    static void Server(char* buffer, char* respond, int& length);
+    static int32_t  Server(char* buffer, char* respond, int& length);
     static std::vector<Argument> parseArgs(char* buffer, int& counter, const std::vector<DataType>& schema);
 
   private:

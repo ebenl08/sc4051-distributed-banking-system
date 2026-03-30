@@ -62,7 +62,7 @@ int main(){
                inet_ntoa(clientaddr.sin_addr),
                ntohs(clientaddr.sin_port));
 
-        if(serviceID == serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
+        if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
             int idx = findCachedReply(cache, reqID, clientaddr);
 
             if(idx != -1){
@@ -75,9 +75,9 @@ int main(){
         char respond[BUFFER_SIZE];
         int length = 0;
 
-        UDPServer::Server(buffer, respond, length);
+        int32_t statusCode = UDPServer::Server(buffer, respond, length);
 
-        if(serviceID == serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
+        if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
             CachedReply entry;
             entry.reqID = reqID;
             entry.clientIP = inet_ntoa(clientaddr.sin_addr);
@@ -87,7 +87,26 @@ int main(){
             cache.push_back(entry);
         }
 
-        sock.send(respond, length, clientaddr);
+        char sendBuffer[BUFFER_SIZE];
+        int counter = 0;
+
+        // reqID
+        Marshalling::marshal(sendBuffer + counter, reqID);
+        counter += 4;
+
+        // serviceID
+        Marshalling::marshal(sendBuffer + counter, serviceID);
+        counter += 4;
+
+        // statusCode
+        Marshalling::marshal(sendBuffer + counter, statusCode);
+        counter += 4;
+
+        // payload
+        memcpy(sendBuffer + counter, respond, length);
+        counter += length;
+
+        sock.send(sendBuffer, counter, clientaddr);
 
         printf("Response message sent.\n");
 
