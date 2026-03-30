@@ -2,15 +2,13 @@ package client.handle;
 
 import java.util.Scanner;
 
-
 import client.net.UDPClient;
 
 public class DSBankingHandle {
-
-    private static final Scanner scanner = new Scanner(System.in);
     
     // Handler instances
     private UDPClient client;
+
     private static OpenAccountHandle openAccountHandle;
     private static CloseAccountHandle closeAccountHandle;
     private static DepositWithdrawHandle depositWithdrawHandle;
@@ -33,11 +31,9 @@ public class DSBankingHandle {
     public void handle(){
         Runtime.getRuntime().addShutdownHook(new Thread(UI::showCursor));
         UI.hideCursor();
-        UI.clearAndHome();
 
         while (true) {
             UI.clearScreen();
-            UI.clearAndHome();
             UI.drawBox("ZEUS BANKING SYSTEM");
 
             System.out.println("  1. Open Account         5. View Account");

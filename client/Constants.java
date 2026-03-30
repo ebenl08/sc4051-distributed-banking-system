@@ -29,6 +29,7 @@ public final class Constants {
     public static final int INT_SIZE = 4;
     public static final int FLOAT_SIZE = 4;
     public static final int LONG_SIZE = 8;
+    public static final int CHAR_SIZE = 1;
     public static final int BUFFER_SIZE = 2048;
 
     //service 
@@ -40,6 +41,7 @@ public final class Constants {
     public static final int SERVICE_TRANSFER_MONEY = 6;
     public static final int SERVICE_CHANGE_PASSWORD = 7;
     public static final int SERVICE_EXIT = 8;
+    public static final int SERVICE_MONITOR_LIVE = 9;
     
 
     private Constants() {}

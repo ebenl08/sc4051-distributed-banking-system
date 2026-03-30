@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Marshalling {
+
   public static byte[] marshal(int value){
     ByteBuffer buffer = ByteBuffer.wrap(new byte[]{
       (byte) (value >> 24), 
@@ -45,8 +46,15 @@ public class Marshalling {
         .order(ByteOrder.BIG_ENDIAN)
         .array();
   }
+
+  public static byte[] marshal(char value){
+    byte[] out = {(byte) value};
+    return out;
+  }
   
-  // Java byte is signed so
+
+  
+  // Java byte is signed (-128 to 127), we need to & with 0xFF to get the unsigned value
   public static int unmarshalInt32(byte[] buffer, int offset){
     buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
     return (int) (buffer[offset] & 0xFF) << 24
@@ -82,6 +90,10 @@ public class Marshalling {
       value += buffer[offset + i];
     }
     return value;
+  }
+
+  public static char unmarshalChar(byte[] buffer, int offset){
+    return (char) (buffer[offset] & 0xFF);
   }
 
   public static void main(String[] args) {
