@@ -95,14 +95,14 @@ public class TransferMoneyHandle {
             UI.display("AMT:  " + String.format("%.2f", this.amount / 100.0) + " " + this.curr1 + " -> " + this.curr2);
             UI.drawSeparator();
             
-            String confirm = UI.prompt("Proceed with transfer? (y/n)");
+            String confirm = SafeUI.prompt("Create this account? (y/n)", SafeUI::validateYesNo);
             switch (confirm.toLowerCase()) {
-                case "y": return 1;
-                case "n": 
+                case "y":
+                    return 1;
+                case "n":
                     UI.clearScreen();
-                    UI.printSuccess("Transfer cancelled.");
+                    UI.printSuccess("Request cancelled.");
                     return 0;
-                default: UI.printError("Please enter 'y' or 'n'.");
             }
         }
     }

@@ -68,15 +68,14 @@ public class DepositWithdrawHandle {
         this.password = password;
         this.currency = currency.toUpperCase();
         
-        String amountStr = UI.prompt("Enter amount:");
+        String amountStr = SafeUI.prompt("Enter amount:", SafeUI::validateMoneyInput);
         this.amount = SafeUI.validateMoneyInput(amountStr);
 
         UI.drawSeparator();
-        String action = UI.prompt("Deposit or Withdraw? (d/w)");
+        String action = SafeUI.prompt("Deposit or Withdraw? (d/w)", SafeUI::validateDepositWithdraw);
         this.actionStr = switch (action.toLowerCase()) {
             case "d" -> "DEPOSIT";
             case "w" -> "WITHDRAW";
-            default -> throw new IllegalArgumentException("Invalid action: " + action);
         };
     }
 

@@ -88,6 +88,19 @@ public class SafeUI {
         }
     }
 
+    public static void validateYesNo(String input) throws IllegalArgumentException {
+        if (input == null || 
+            !(input.equalsIgnoreCase("y") || input.equalsIgnoreCase("n"))) {
+            throw new IllegalArgumentException("Please enter 'y' or 'n' only.");
+        }
+    }
+    public static void validateDepositWithdraw(String input) throws IllegalArgumentException {
+        if (input == null || 
+            !(input.equalsIgnoreCase("d") || input.equalsIgnoreCase("w"))) {
+            throw new IllegalArgumentException("Please enter 'd' (deposit) or 'w' (withdraw) only.");
+        }
+    }
+
     public static long parseMoneyNumber(String input) {
         // BigDecimal handles the "clean" multiplication by 100
         return new BigDecimal(input)

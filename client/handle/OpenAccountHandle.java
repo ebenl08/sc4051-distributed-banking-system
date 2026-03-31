@@ -74,7 +74,7 @@ public class OpenAccountHandle {
             UI.display("Balance:  " + String.format("%.2f", this.initialBalance / 100.0));
             UI.drawSeparator();
             
-            String confirm = UI.prompt("Create this account? (y/n)");
+            String confirm = SafeUI.prompt("Create this account? (y/n)", SafeUI::validateYesNo);
             switch (confirm.toLowerCase()) {
                 case "y":
                     return 1;
@@ -82,8 +82,6 @@ public class OpenAccountHandle {
                     UI.clearScreen();
                     UI.printSuccess("Request cancelled.");
                     return 0;
-                default:
-                    UI.printError("Invalid input. Please enter 'y' or 'n'.");
             }
         }
     }
