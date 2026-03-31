@@ -12,6 +12,10 @@
 #include "Constant.h"
 #include "Account.h"
 #include "AccountManager.h"
+#include "MonitorManager.h"
+#include "Marshalling.h"
+#include "Argument.h"
+#include "Constant.h"
 #include "Socket.h"
 
 using namespace std;
@@ -22,13 +26,13 @@ class Handler{
     void setCurrentClientAddr(const sockaddr_in& clientaddr);
     void setSocket(Socket* sock);
 
-    static int32_t service1(const std::vector<Argument>& args, char* respond, int& length);
-    static int32_t service2(const std::vector<Argument>& args, char* respond, int& length);
-    static int32_t service3(const std::vector<Argument>& args, char* respond, int& length);
-    static int32_t service4(const std::vector<Argument>& args, char* respond, int& length);
-    static int32_t service5(const std::vector<Argument>& args, char* respond, int& length);
-    static int32_t service6(const std::vector<Argument>& args, char* respond, int& length);
-    static int32_t service7(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service1(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service2(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service3(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service4(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service5(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service6(const std::vector<Argument>& args, char* respond, int& length);
+    int32_t service7(const std::vector<Argument>& args, char* respond, int& length);
 
   private:
     AccountManager accountManager;

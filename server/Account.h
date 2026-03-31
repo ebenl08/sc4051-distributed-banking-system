@@ -13,26 +13,28 @@
 
 #include "Constant.h"
 
+using namespace std;
+
 class Account{
     
     public:
-        Account(std::string username, std::string password, char currency);
+        Account(int32_t accountNumber, string username, string password, char currency);
         int32_t getAccountNumber() const;
-        const std::string getUsername() const;
-        const std::string getPassword() const;
-        const std::string getCurrencyString() const;
+        const string getUsername() const;
+        const string getPassword() const;
+        const string getCurrencyString() const;
         const char getCurrency() const;
         const int64_t getBalance() const;
-        const std::string getBalanceString() const;
+        const string getBalanceString() const;
         void updateBalance(int64_t amount);
         void updatePassword(string newPassword);
 
         friend bool operator==(const Account& lhs, const Account& rhs);
-        friend std::ostream& operator<<(std::ostream& os, const Account& account);
+        friend ostream& operator<<(ostream& os, const Account& account);
     private:
         int32_t accountNumber;
-        std::string username;
-        std::string password;
+        string username;
+        string password;
         char currency;
         int64_t balance = 0;
         

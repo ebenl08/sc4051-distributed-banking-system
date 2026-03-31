@@ -57,7 +57,7 @@ int main(){
         int32_t reqID = Marshalling::unmarshalInt32(buffer);
         int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
         handler.setCurrentClientAddr(clientaddr);
-
+        cout << "service ID: " << serviceID << endl;
         printf("[Client %s port %d] Packet received\n",
                inet_ntoa(clientaddr.sin_addr),
                ntohs(clientaddr.sin_port));
@@ -105,7 +105,7 @@ int main(){
         // payload
         memcpy(sendBuffer + counter, respond, length);
         counter += length;
-
+        cout << "[main] total bytes sent = " << counter << endl;
         sock.send(sendBuffer, counter, clientaddr);
 
         printf("Response message sent.\n");

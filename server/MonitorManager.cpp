@@ -55,7 +55,7 @@ int MonitorManager::buildCallbackPacket(char* buffer, const std::string& message
     counter += 4;
 
     // statusCode = SUCCESS
-    Marshalling::marshal(buffer + counter, (int32_t)SUCCESS);
+    Marshalling::marshal(buffer + counter, (int32_t)0);
     counter += 4;
 
     // payload = string message

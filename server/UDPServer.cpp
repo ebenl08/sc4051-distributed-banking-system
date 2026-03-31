@@ -37,6 +37,8 @@ std::vector<Argument> UDPServer::parseArgs(char* buffer, int& counter, const std
 }
 
 int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
+    Handler handler;
+
     int32_t reqID = Marshalling::unmarshalInt32(buffer);
     int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
     int32_t statusCode = Marshalling::unmarshalInt32(buffer + 8);
@@ -51,7 +53,14 @@ int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service1(args, respond, length);
+        statusCode = handler.service1(args, respond, length);
+        cout << "[UDPServer::Server] after service1, statusCode = " << statusCode << endl;
+        cout << "[UDPServer::Server] after service1, length = " << length << endl;
+        cout << "[UDPServer::Server] respond first bytes = ";
+        for (int i = 0; i < length; i++) {
+            printf("%02x ", (unsigned char)respond[i]);
+        }
+        cout << endl;
     } else if(serviceID == 2){
         // Close Account
         vector<DataType> schema = {
@@ -60,18 +69,18 @@ int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_STRING
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service2(args, respond, length);
+        statusCode = handler.service2(args, respond, length);
     } else if(serviceID == 3){
         // Deposit/Withdraw
         vector<DataType> schema = {
             TYPE_STRING,
             TYPE_INT32,
             TYPE_STRING,
-            TYPE_STRING,
+            TYPE_CHAR,
             TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service3(args, respond, length);
+        statusCode = handler.service3(args, respond, length);
     } else if(serviceID == 4){
         // Transfer money
         vector<DataType> schema = {
@@ -85,7 +94,7 @@ int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_INT64
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service4(args, respond, length);
+        statusCode = handler.service4(args, respond, length);
     } else if(serviceID == 5){
         // View account
         vector<DataType> schema = {
@@ -94,16 +103,16 @@ int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_STRING
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service5(args, respond, length);
+        statusCode = handler.service5(args, respond, length);
     } else if(serviceID == 6){
         // Monitor Account
         vector<DataType> schema = {
             TYPE_INT32 
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service6(args, respond, length, clientaddr);
+        statusCode = handler.service6(args, respond, length);
     } else if(serviceID == 7){
-        // Non-Idempotent additional service
+        // Password Change
         vector<DataType> schema = {
             TYPE_STRING,
             TYPE_INT32,
@@ -111,7 +120,7 @@ int32_t  UDPServer::Server(char* buffer, char* respond, int& length){
             TYPE_STRING,
         };
         vector<Argument> args = parseArgs(buffer, counter, schema);
-        statusCode = service7(args, respond, length);
+        statusCode = handler.service7(args, respond, length);
     }
     return statusCode;
 }

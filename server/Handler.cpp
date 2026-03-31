@@ -1,5 +1,7 @@
 #include "Handler.h"
 
+Handler::Handler() {}
+
 void Handler::setCurrentClientAddr(const sockaddr_in& clientaddr) {
     currentClientAddr = clientaddr;
     hasCurrentClientAddr = true;
@@ -16,10 +18,10 @@ void Handler::notifyMonitorClients(const std::string& message) {
 }
 
 int32_t Handler::service1(const vector<Argument>& args, char* respond, int& length){
-    string username = args[0].stringValue;
-    string password = args[1].stringValue;
-    char currency = args[2].stringValue[0];
-    int64_t initialBalance = args[3].int64Value;
+    string username = args[0].value.stringValue;
+    string password = args[1].value.stringValue;
+    char currency = args[2].value.charValue;
+    int64_t initialBalance = args[3].value.int64Value;
     int32_t accountNumber;
     
     int result = accountManager.addAccount(username, password, currency, accountNumber);
@@ -35,7 +37,7 @@ int32_t Handler::service1(const vector<Argument>& args, char* respond, int& leng
     }
 
     if(initialBalance > 0){
-        accountManager.depositWithdraw(username, password, currency, initialBalance);
+        accountManager.depositWithdraw(username, accountNumber, password, currency, initialBalance);
     }
     
     string msg = to_string(accountNumber);
@@ -46,13 +48,17 @@ int32_t Handler::service1(const vector<Argument>& args, char* respond, int& leng
     string msgMonitor = "Account created: " + to_string(accountNumber);
     notifyMonitorClients(msgMonitor);
 
+    cout << "[service1] accountNumber = " << accountNumber << endl;
+    cout << "[service1] msg = " << msg << endl;
+    cout << "[service1] length = " << length << endl;
+
     return SUCCESS;
 }
 
 int32_t Handler::service2(const std::vector<Argument>& args, char* respond, int& length){
-    string name = args[0].stringValue;
-    int32_t accountNumber = args[1].int32Value;
-    string password = args[2].stringValue;
+    string name = args[0].value.stringValue;
+    int32_t accountNumber = args[1].value.int32Value;
+    string password = args[2].value.stringValue;
 
     int result = accountManager.closeAccount(name, accountNumber, password);
 
@@ -85,11 +91,11 @@ int32_t Handler::service2(const std::vector<Argument>& args, char* respond, int&
 }
 
 int32_t Handler::service3(const std::vector<Argument>& args, char* respond, int& length){
-    string username = args[0].stringValue;
-    int32_t accountNumber = args[1].int32Value;
-    string password = args[2].stringValue;
-    char currency = args[3].stringValue;
-    int64_t amount = args[4].int64Value;
+    string username = args[0].value.stringValue;
+    int32_t accountNumber = args[1].value.int32Value;
+    string password = args[2].value.stringValue;
+    char currency = args[3].value.charValue;
+    int64_t amount = args[4].value.int64Value;
 
     int result = accountManager.depositWithdraw(username, accountNumber, password, currency, amount);
 
@@ -110,7 +116,7 @@ int32_t Handler::service3(const std::vector<Argument>& args, char* respond, int&
     }
 
     string msg;
-    string msgMonitor
+    string msgMonitor;
     if(amount < 0){
         msg = "Amount of withdrawal: " + to_string(-amount);
         msgMonitor = "Account " + to_string(accountNumber) + " withdrawed: " + to_string(amount);
@@ -135,14 +141,14 @@ int32_t Handler::service3(const std::vector<Argument>& args, char* respond, int&
 }
 
 int32_t Handler::service4(const std::vector<Argument>& args, char* respond, int& length){
-    string senderUsername = args[0].stringValue;
-    int32_t senderAccountNumber = args[1].int32Value;
-    string recipientUsername = args[2].stringValue;
-    int32_t recipientAccountNumber = args[3].int32Value;
-    char senderCurrency = args[4].stringValue;
-    char recipientCurrency = args[5].stringValue;
-    string password = args[6].stringValue;
-    int64_t amount = args[7].int64Value;
+    string senderUsername = args[0].value.stringValue;
+    int32_t senderAccountNumber = args[1].value.int32Value;
+    string recipientUsername = args[2].value.stringValue;
+    int32_t recipientAccountNumber = args[3].value.int32Value;
+    char senderCurrency = args[4].value.charValue;
+    char recipientCurrency = args[5].value.charValue;
+    string password = args[6].value.stringValue;
+    int64_t amount = args[7].value.int64Value;
 
     int result = accountManager.transfer(senderUsername, senderAccountNumber, recipientUsername, recipientAccountNumber, senderCurrency, 
     recipientCurrency, password, amount);
@@ -194,9 +200,9 @@ int32_t Handler::service4(const std::vector<Argument>& args, char* respond, int&
 }
 
 int32_t Handler::service5(const std::vector<Argument>& args, char* respond, int& length){
-    string username = args[0].stringValue;
-    int32_t accountNumber = args[1].int32Value;
-    string password = args[2].stringValue;
+    string username = args[0].value.stringValue;
+    int32_t accountNumber = args[1].value.int32Value;
+    string password = args[2].value.stringValue;
     char currency;
     int64_t balance;
 
@@ -235,7 +241,7 @@ int32_t Handler::service5(const std::vector<Argument>& args, char* respond, int&
 }
 
 int32_t Handler::service6(const std::vector<Argument>& args, char* respond, int& length) {
-    int32_t interval = args[0].int32Value;
+    int32_t interval = args[0].value.int32Value;
     int counter = 0;
 
     if (interval <= 0) {
@@ -261,11 +267,13 @@ int32_t Handler::service6(const std::vector<Argument>& args, char* respond, int&
 }
 
 int32_t Handler::service7(const std::vector<Argument>& args, char* respond, int& length){
-    string username = args[0].stringValue;
-    int32_t accountNumber = args[1].int32Value;
-    string password = args[2].stringValue;
-    string newPassword = args[3].stringValue;
+    string username = args[0].value.stringValue;
+    int32_t accountNumber = args[1].value.int32Value;
+    string password = args[2].value.stringValue;
+    string newPassword = args[3].value.stringValue;
     
+    int result = accountManager.changePassword(username, accountNumber, password, newPassword);
+
     int counter = 0;
 
     if(result == SUCCESS){
