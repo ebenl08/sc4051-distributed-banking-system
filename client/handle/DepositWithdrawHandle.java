@@ -76,6 +76,7 @@ public class DepositWithdrawHandle {
         this.actionStr = switch (action.toLowerCase()) {
             case "d" -> "DEPOSIT";
             case "w" -> "WITHDRAW";
+            default -> throw new IllegalArgumentException("Invalid action: " + action);
         };
     }
 
