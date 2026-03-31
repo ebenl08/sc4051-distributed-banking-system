@@ -3,7 +3,7 @@
 
 
 void Marshalling::marshal(char* buffer, int32_t value){
-  value = htonl(value);
+  // value = htonl(value);
   char* ptr = buffer;
   memset(buffer, 0, sizeof(int32_t));
   *ptr |= value>>24; ++ptr;
@@ -13,7 +13,7 @@ void Marshalling::marshal(char* buffer, int32_t value){
 }
 
 void Marshalling::marshal(char* buffer, int64_t value){
-  value = htonll(value);
+  // value = htonll(value);
   char* ptr = buffer;
   memset(buffer, 0, sizeof(int64_t));
   *ptr |= value>>56; ++ptr;
@@ -46,7 +46,7 @@ int32_t Marshalling::unmarshalInt32(char* buffer){
                   (uint32_t) tmpbuffer[1] << 16 | 
                   (uint32_t) tmpbuffer[2] << 8 | 
                   (uint32_t) tmpbuffer[3]);
-  return ntohl(value);
+  return value;
 }
 
 int64_t Marshalling::unmarshalInt64(char* buffer){
@@ -55,7 +55,7 @@ int64_t Marshalling::unmarshalInt64(char* buffer){
                    ((uint64_t)tmpbuffer[2] << 40) | ((uint64_t)tmpbuffer[3] << 32) |
                    ((uint64_t)tmpbuffer[4] << 24) | ((uint64_t)tmpbuffer[5] << 16) |
                    ((uint64_t)tmpbuffer[6] << 8) | (uint64_t)tmpbuffer[7]);
-  return ntohll(value);
+  return value;
 }
 
 float Marshalling::unmarshalFloat(char* buffer){

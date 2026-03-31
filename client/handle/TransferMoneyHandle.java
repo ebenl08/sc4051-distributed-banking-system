@@ -32,14 +32,14 @@ public class TransferMoneyHandle {
             // Schema: [string, string, string, string, char, char, string, int64]
             // (name1, account#1, name2, account#2, currency1, currency2, passw1, amount)
             Args[] payload = new Args[]{
-                new Args(Args.Type.STRING, this.name1),
-                new Args(Args.Type.STRING, this.acc1),
-                new Args(Args.Type.STRING, this.name2),
-                new Args(Args.Type.STRING, this.acc2),
-                new Args(Args.Type.CHAR,   this.curr1),
-                new Args(Args.Type.CHAR,   this.curr2),
-                new Args(Args.Type.STRING, this.passw1),
-                new Args(Args.Type.INT64,  this.amount)
+                Args.ofString(name1),
+                Args.ofInt32(Integer.parseInt(acc1)),
+                Args.ofString(name2),
+                Args.ofInt32(Integer.parseInt(acc2)),
+                Args.ofChar(curr1),
+                Args.ofChar(curr2),
+                Args.ofString(this.passw1),
+                Args.ofInt64(this.amount)
             };
 
             Response response = this.client.sendRequest(SERVICE_ID, payload);

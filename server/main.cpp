@@ -42,77 +42,96 @@ int main(){
     int port = 8080;
     const char* hostname = "localhost";
 
-    Socket sock = Socket(port, hostname);
+    cout << "Starting server on " << hostname << ":" << port << endl;
 
+    cout << "Initializing socket..." << endl;
+    Socket sock(port, hostname);
+
+    cout << "Initializing service handler and loading server configuration..." << endl;
     Handler handler(sock);
+    serverConfig config = {
+        .semanticInvoc = AT_MOST_ONE_SEM_INVO,
+        .maxRetry = 3,
+        .socket = sock,
+        .handler = handler
+    };
+    UDPServer server(config);
 
-    vector<CachedReply> cache;
+    cout << "Server is running and ready to accept requests." << endl;
 
-    do {
-        char buffer[BUFFER_SIZE];
+    server.startServer();
 
-        sockaddr_in clientaddr;
-        sock.receive(buffer, clientaddr);
+    cout << "Server has stopped." << endl;
+    
+    
+    
+    // vector<CachedReply> cache;
 
-        printf("Message received\n");
+    // do {
+    //     char buffer[BUFFER_SIZE];
 
-        int32_t reqID = Marshalling::unmarshalInt32(buffer);
-        int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
+    //     sockaddr_in clientaddr;
+    //     sock.receive(buffer, clientaddr);
 
-        printf("[Client %s port %d] Packet received\n",
-               inet_ntoa(clientaddr.sin_addr),
-               ntohs(clientaddr.sin_port));
+    //     printf("Message received\n");
 
-        if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
-            int idx = findCachedReply(cache, reqID, clientaddr);
+    //     int32_t reqID = Marshalling::unmarshalInt32(buffer);
+    //     int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
 
-            if(idx != -1){
-                printf("Duplicate request detected. Resending cached response.\n");
-                sock.send(cache[idx].response, cache[idx].length, clientaddr);
-                continue;
-            }
-        }
+    //     printf("[Client %s port %d] Packet received\n",
+    //            inet_ntoa(clientaddr.sin_addr),
+    //            ntohs(clientaddr.sin_port));
 
-        char respond[BUFFER_SIZE];
-        int length = 0;
+    //     if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
+    //         int idx = findCachedReply(cache, reqID, clientaddr);
 
-        int parseCounter = 0;
-        Request request = PacketBuilder::parseRequestPacket(buffer, parseCounter);
-        Response response = handler.handle_service(request, clientaddr);
-        int32_t statusCode = response.statusCode;
+    //         if(idx != -1){
+    //             printf("Duplicate request detected. Resending cached response.\n");
+    //             sock.send(cache[idx].response, cache[idx].length, clientaddr);
+    //             continue;
+    //         }
+    //     }
 
-        if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
-            CachedReply entry;
-            entry.reqID = reqID;
-            entry.clientIP = inet_ntoa(clientaddr.sin_addr);
-            entry.clientPort = ntohs(clientaddr.sin_port);
-            memcpy(entry.response, respond, length);
-            entry.length = length;
-            cache.push_back(entry);
-        }
+    //     char respond[BUFFER_SIZE];
+    //     int length = 0;
 
-        char sendBuffer[BUFFER_SIZE];
-        int counter = 0;
+    //     int parseCounter = 0;
+    //     Request request = PacketBuilder::parseRequestPacket(buffer, parseCounter);
+    //     Response response = handler.handle_service(request, clientaddr);
+    //     int32_t statusCode = response.statusCode;
 
-        // reqID
-        Marshalling::marshal(sendBuffer + counter, reqID);
-        counter += 4;
+    //     if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
+    //         CachedReply entry;
+    //         entry.reqID = reqID;
+    //         entry.clientIP = inet_ntoa(clientaddr.sin_addr);
+    //         entry.clientPort = ntohs(clientaddr.sin_port);
+    //         memcpy(entry.response, respond, length);
+    //         entry.length = length;
+    //         cache.push_back(entry);
+    //     }
 
-        // serviceID
-        Marshalling::marshal(sendBuffer + counter, serviceID);
-        counter += 4;
+    //     char sendBuffer[BUFFER_SIZE];
+    //     int counter = 0;
 
-        // statusCode
-        Marshalling::marshal(sendBuffer + counter, statusCode);
-        counter += 4;
+    //     // reqID
+    //     Marshalling::marshal(sendBuffer + counter, reqID);
+    //     counter += 4;
 
-        // payload
-        memcpy(sendBuffer + counter, respond, length);
-        counter += length;
+    //     // serviceID
+    //     Marshalling::marshal(sendBuffer + counter, serviceID);
+    //     counter += 4;
 
-        sock.send(sendBuffer, counter, clientaddr);
+    //     // statusCode
+    //     Marshalling::marshal(sendBuffer + counter, statusCode);
+    //     counter += 4;
 
-        printf("Response message sent.\n");
+    //     // payload
+    //     memcpy(sendBuffer + counter, respond, length);
+    //     counter += length;
 
-    } while (true);
+    //     sock.send(sendBuffer, counter, clientaddr);
+
+    //     printf("Response message sent.\n");
+
+    // } while (true);
 }

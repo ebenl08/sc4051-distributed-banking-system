@@ -37,10 +37,10 @@ public class ChangePasswordHandle{
 
     try{
       Args[] payload = new Args[] {
-          new Args(Args.Type.STRING, this.account),
-          new Args(Args.Type.STRING, this.name),
-          new Args(Args.Type.STRING, this.oldPassword),
-          new Args(Args.Type.STRING, this.newPassword)
+          Args.ofString(name),
+          Args.ofInt32(Integer.parseInt(account)),
+          Args.ofString(oldPassword),
+          Args.ofString(newPassword),
       };
       
       Response response = this.client.sendRequest(SERVICE_ID, payload);
@@ -61,22 +61,19 @@ public class ChangePasswordHandle{
     while (true) {
         UI.clearScreen();
         UI.drawBox("CHANGE PASSWORD");
-        String account = UI.prompt("Account Number:");
-        String name = UI.prompt("Name:");
-        String oldPassword = UI.prompt("Old Password:");
-        String newPassword = UI.prompt("New Password:");
-        String confirmPassword = UI.prompt("Confirm New Password:");
+        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
+        String name = SafeUI.prompt("Name:", SafeUI::validateName);
+        String oldPassword = SafeUI.prompt("Old Password:", SafeUI::validatePassword);
+        String newPassword = SafeUI.prompt("New Password:", SafeUI::validatePassword);
+        String confirmPassword = SafeUI.prompt("Confirm New Password:",
+                  input -> SafeUI.validatePasswordConfirmation(newPassword, input));
         UI.drawSeparator();
-          
-        if (!newPassword.equals(confirmPassword)) {
-            UI.printError("New password and confirm password do not match. Please try again!");
-        } else {
-            this.account = account;
-            this.name = name;
-            this.oldPassword = oldPassword;
-            this.newPassword = newPassword;
-            break;
-        }
+            
+        this.account = account;
+        this.name = name;
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
+        break;
     }
   }
 

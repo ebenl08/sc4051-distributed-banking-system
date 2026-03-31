@@ -42,6 +42,11 @@ public final class Constants {
     public static final int SERVICE_CHANGE_PASSWORD = 7;
     public static final int SERVICE_EXIT = 8;
     public static final int SERVICE_MONITOR_LIVE = 9;
+
+    //currency
+    public static final int SGD = 0;
+    public static final int USD = 1;
+    public static final int EUR = 2;
     
 
     private Constants() {}

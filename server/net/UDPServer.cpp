@@ -1,5 +1,6 @@
 #include "server/Constant.h"
 #include "server/Handler.h"
+#include "server/Helper.h"
 
 #include "server/net/UDPServer.h"
 #include "server/net/PacketBuilder.h"
@@ -10,12 +11,10 @@
 
 using namespace std;
 
-
 UDPServer::UDPServer(serverConfig config) : 
     socket(config.socket), 
     semanticInvoc(config.semanticInvoc), 
     maxRetry(config.maxRetry), 
-    debug(config.debug),
     handler(config.handler)
 {
 }
@@ -29,7 +28,6 @@ int32_t UDPServer::startServer(){
 
     while(true){
         // wait for request
-        
         int32_t responseLength = serveRequest(buffer, response, clientaddr);
         if(responseLength > 0) {
             socket.send(response, responseLength, clientaddr);
@@ -48,8 +46,11 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
 
     int n = socket.receive(buffer, clientaddr);
     
+    pdebug("[Client %s port %d] Packet received\n", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+    
     // parse request packet
     Request request = PacketBuilder::parseRequestPacket(buffer, counter);
+    pdebug("Parsed request: %s\n", request.toString().c_str());
 
     // initialize response packet
     Response response_pkt;
@@ -60,14 +61,17 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
         )
     ){
         // use cached response
+        pdebug("Duplicate or outdated request detected. Retrieving cached response.\n");
         MapKey mapKey = generateMapKey(clientaddr, request.reqID);
         response_pkt = request_client_map[mapKey];
     }
     else{
         // process request and generate response
+        pdebug("Processing request with service ID %d\n", request.serviceID);
         response_pkt = this->handler.handle_service(request, clientaddr);
 
         // cache response for at-most-one semantic invocation
+        pdebug("Caching response for request ID %d\n", request.reqID);
         if(semanticInvoc == AT_MOST_ONE_SEM_INVO) {
             uint64_t networkKey = generateNetworkKey(clientaddr);
             latest_request_map[networkKey] = request.reqID;
@@ -82,6 +86,9 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
     int32_t responseLength = PacketBuilder::buildResponsePacket(response, response_pkt);
     response_pkt.payloadLength = responseLength; // Update payload length in the response packet (for internal use)
 
+    pdebug("Response packet built with length %d bytes\n", responseLength);
+    pdebug("Sending response to client %s port %d\n", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+    pdebug("Response: %s\n", response_pkt.toString().c_str());
     return response_pkt.payloadLength;
 }
 

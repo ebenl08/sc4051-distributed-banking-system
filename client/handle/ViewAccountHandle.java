@@ -32,9 +32,9 @@ public class ViewAccountHandle {
             // Updated Payload: [string, string, string] -> name, account#, password
             // Note: Ensure your ServiceSchemaFactory matches this new 3-string requirement
             Args[] payload = new Args[]{
-                new Args(Args.Type.STRING, this.name),
-                new Args(Args.Type.STRING, this.accountId),
-                new Args(Args.Type.STRING, this.password)
+                Args.ofString(this.name),
+                Args.ofInt32(Integer.parseInt(this.accountId)),
+                Args.ofString(this.password)
             };
 
             Response response = this.client.sendRequest(SERVICE_ID, payload);
@@ -93,6 +93,7 @@ public class ViewAccountHandle {
             UI.display("Account: " + this.accountId);
             UI.display("Current Balance: " + balance);
             UI.drawSeparator();
+
         } else {
             String errorMsg = (response.payload.length > 0) ? (String) response.payload[0].value : "Authentication failed";
             UI.printError("Failed to view account: " + errorMsg);

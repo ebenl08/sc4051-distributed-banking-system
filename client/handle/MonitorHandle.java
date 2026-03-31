@@ -33,7 +33,7 @@ public class MonitorHandle {
             }
             // [string, string, string] -> name, account#, passw
             Args[] payload = new Args[]{
-                new Args(Args.Type.INT32, this.interval) // Assuming account is an integer ID
+                Args.ofInt32(this.interval)// Assuming account is an integer ID
             };
             Response response = this.client.sendRequest(SERVICE_ID, payload);
             this.REQUEST_RESULT_STATE(response);

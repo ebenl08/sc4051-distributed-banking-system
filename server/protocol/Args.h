@@ -86,6 +86,19 @@ struct Argument {
         }
         return *this;
     }
+
+    std::string toString() const {
+        char buf[128];
+        switch (type) {
+            case TYPE_INT32:  snprintf(buf, sizeof(buf), "INT32: %d", value.int32Value); break;
+            case TYPE_INT64:  snprintf(buf, sizeof(buf), "INT64: %lld", value.int64Value); break;
+            case TYPE_FLOAT:  snprintf(buf, sizeof(buf), "FLOAT: %.2f", value.floatValue); break;
+            case TYPE_CHAR:   snprintf(buf, sizeof(buf), "CHAR: %c", value.charValue); break;
+            case TYPE_STRING: return std::string("STRING: ") + value.stringValue;
+            default:          return "UNKNOWN TYPE";
+        }
+        return std::string(buf);
+    }
 };
 
 #endif

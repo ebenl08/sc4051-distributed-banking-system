@@ -30,11 +30,11 @@ public class CloseAccountHandle {
                 return;
             }
 
-            // [string, string, string] -> name, account#, passw
+            // [string, string, string] -> name, account#, password
             Args[] payload = new Args[]{
-                new Args(Args.Type.STRING, this.name),
-                new Args(Args.Type.STRING, this.account),
-                new Args(Args.Type.STRING, this.password)
+                Args.ofString(this.name),
+                Args.ofInt32(Integer.parseInt(this.account)),
+                Args.ofString(this.password)
             };
 
             Response response = this.client.sendRequest(SERVICE_ID, payload);
@@ -65,7 +65,7 @@ public class CloseAccountHandle {
             UI.display("Name:    " + this.name);
             UI.display("Account: " + this.account);
             UI.drawSeparator();
-            String confirm = UI.prompt("Are you sure you want to PERMANENTLY close this account? (y/n)");
+            String confirm = UI.prompt("Close this account PERMANENTLY? (y/n)");
 
             switch (confirm.toLowerCase()) {
                 case "y":

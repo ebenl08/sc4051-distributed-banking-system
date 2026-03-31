@@ -3,9 +3,14 @@ package client.handle;
 import java.util.Scanner;
 
 public class UI {
+
     // Constants
     public static final String HIDE_CURSOR = "\033[?25l";
     public static final String SHOW_CURSOR = "\033[?25h";
+
+    public static final String CURSOR_UP = "\033[F";
+    public static final String CURSOR_BEGIN = "\r";
+    public static final String CLEAR_LINE = "\033[2K";
     
     public static final String HOME  = "\033[H";
     public static final String RESET = "\033[0m";
@@ -21,6 +26,7 @@ public class UI {
     private static final String BOX_TOP   = "╔══════════════════════════════════════════════════════╗";
     private static final String BOX_BOTTOM = "╚══════════════════════════════════════════════════════╝";
     private static final String SEPARATOR = "──────────────────────────────────────────────────────────";
+
 
     public static void hideCursor()   { System.out.print(HIDE_CURSOR); }
     public static void showCursor()   { System.out.print(SHOW_CURSOR); }
@@ -41,14 +47,14 @@ public class UI {
         System.out.printf("║ %-52s ║\n", centerText(title, 52));
         System.out.println(BOX_BOTTOM + RESET);
     }
-
     public static void drawSeparator() { System.out.println(BOLD + SEPARATOR + RESET); }
+
+    
     public static String prompt(String message) {
         System.out.print(" " + message + " > ");
         Scanner s = new Scanner(System.in);
         return s.nextLine();
     }
-
 
     public static void printSuccess(String msg) {
         System.out.println(GREEN + " [SUCCESS] " + msg + RESET);
@@ -62,8 +68,21 @@ public class UI {
         System.out.println(YELLOW + " [WARNING] " + msg + RESET);
         UI.sleep();
     }
+
+
     public static void display(String msg){
         System.out.println(msg);
+    }
+
+    public static void resetLine() {
+        // Move cursor to beginning of line and clear it
+        System.out.print(CURSOR_BEGIN + CLEAR_LINE);
+        System.out.flush();
+    }
+
+    public static void cursorUp() {
+        System.out.print(CURSOR_UP);
+        System.out.flush();
     }
 
     private static String centerText(String text, int width) {

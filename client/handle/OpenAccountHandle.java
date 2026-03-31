@@ -32,10 +32,10 @@ public class OpenAccountHandle {
 
             // Schema: [string, string, char, int64]
             Args[] payload = new Args[]{
-                new Args(Args.Type.STRING, this.name),
-                new Args(Args.Type.STRING, this.password),
-                new Args(Args.Type.CHAR, this.currency),
-                new Args(Args.Type.INT64, this.initialBalance)
+                Args.ofString(this.name),
+                Args.ofString(this.password),
+                Args.ofChar(this.currency),
+                Args.ofInt64(this.initialBalance)
             };
 
             Response response = this.client.sendRequest(SERVICE_ID, payload);

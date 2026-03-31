@@ -32,11 +32,11 @@ public class DepositWithdrawHandle {
             }
 
             Args[] payload = new Args[]{
-                new Args(Args.Type.STRING, this.name),
-                new Args(Args.Type.STRING, this.account),
-                new Args(Args.Type.STRING, this.password),
-                new Args(Args.Type.CHAR, this.currency.charAt(0)),
-                new Args(Args.Type.INT64, this.amount)
+                Args.ofString(name),
+                Args.ofInt32(Integer.parseInt(account)),
+                Args.ofString(password),
+                Args.ofChar(currency.charAt(0)),
+                Args.ofInt64(amount)
             };
 
             Response response = this.client.sendRequest(SERVICE_ID, payload);

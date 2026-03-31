@@ -1,4 +1,5 @@
 #!/bin/bash
 
 
-bash ./server/bin/app
+
+./server/bin/app

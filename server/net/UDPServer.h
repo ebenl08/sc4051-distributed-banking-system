@@ -26,9 +26,8 @@
 typedef struct {
     int32_t semanticInvoc;
     int32_t maxRetry;
-    bool debug;
     Socket& socket;
-    Handler handler;
+    Handler& handler;
 } serverConfig;
 
 struct MapKey {
@@ -62,11 +61,10 @@ class UDPServer{
     int32_t semanticInvoc = AT_LEAST_ONE_SEM_INVO;
     int32_t requestIdCounter = 0;
     int32_t maxRetry = 3;
-    bool debug = false;
     Socket& socket;
     
-    std::unordered_map<MapKey, Response, MapKeyHasher> request_client_map; // Map request ID to client address
-    std::unordered_map<uint64_t, int32_t> latest_request_map; // Map client address to latest request ID
+    std::unordered_map<MapKey, Response, MapKeyHasher> request_client_map = std::unordered_map<MapKey, Response, MapKeyHasher>(); // Map request ID to client address
+    std::unordered_map<uint64_t, int32_t> latest_request_map = std::unordered_map<uint64_t, int32_t>(); // Map client address to latest request ID
 
     MapKey generateMapKey(const sockaddr_in& clientaddr, int32_t requestId);
     uint64_t generateNetworkKey(const sockaddr_in& clientaddr);

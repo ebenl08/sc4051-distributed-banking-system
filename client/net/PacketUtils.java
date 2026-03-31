@@ -66,6 +66,10 @@ public class PacketUtils {
         List<Args> args = new ArrayList<>();
         for (Args.Type type : schema) {
             // For simplicity, we assume the first byte of each argument indicates its type
+            if(offset >= buffer.length){
+                break;
+            }
+
             switch (type) {
                 case Args.Type.STRING:
                     int length = Marshalling.unmarshalInt32(buffer, offset);

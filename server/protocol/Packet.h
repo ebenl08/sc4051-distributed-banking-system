@@ -10,18 +10,35 @@
 
 #include "server/protocol/Args.h"
 
+#include <string>
+#include <sstream>
+
 struct Request {
     int32_t reqID;
     int32_t serviceID;
-    int32_t payloadLength; // for internal use, not transmitted
+    int32_t payloadLength; 
     std::vector<Argument> args;
+
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "REQUEST [ID: " << reqID << " | Service: " << serviceID << "] Args(" << args.size() << "): ";
+        for (const auto& arg : args) ss << "{" << arg.toString() << "} ";
+        return ss.str();
+    }
 };
 
 struct Response {
     int32_t reqID;
     char statusCode;
-    int32_t payloadLength; // for internal use, not transmitted
+    int32_t payloadLength;
     std::vector<Argument> args;
+
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "RESPONSE [ID: " << reqID << " | Status: " << (int)statusCode << "] Args(" << args.size() << "): ";
+        for (const auto& arg : args) ss << "{" << arg.toString() << "} ";
+        return ss.str();
+    }
 };
 
 
