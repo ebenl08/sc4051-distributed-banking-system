@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import client.net.Socket;
+
 import client.protocol.Args;
 import client.protocol.Request;
 import client.protocol.Response;
