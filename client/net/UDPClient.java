@@ -1,25 +1,19 @@
 package client.net;
 
 import client.Constants;
-
-import java.io.IOException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-
-import client.net.Socket;
-
 import client.protocol.Args;
 import client.protocol.Request;
 import client.protocol.Response;
 import client.protocol.ServiceSchema;
 import client.protocol.ServiceSchemaFactory;
 import client.protocol.StatusCode;
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 
 public class UDPClient {
@@ -79,6 +73,9 @@ public class UDPClient {
     }
     public int getRequestId() {
         return this.requestIdCounter;
+    }
+    public void incrementRequestId() {
+        this.requestIdCounter++;
     }
     public boolean isDebug() {
         return this.debug;
@@ -165,6 +162,7 @@ public class UDPClient {
         if(retryCount > this.maxRetry){
             throw new TimeoutException(String.format("Request ID %d failed after %d retries", requestId, this.maxRetry));
         }
+        incrementRequestId();
         return PacketUtils.parseResponseMessage(response, this.serviceSchema);
     }
 
