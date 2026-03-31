@@ -62,20 +62,28 @@ public class TransferMoneyHandle {
         UI.drawBox("TRANSFER MONEY");
         
         // Sender Info
-        this.name1 = UI.prompt("Your Name:");
-        this.acc1  = UI.prompt("Your Account #:");
-        this.passw1 = UI.prompt("Your Password:");
-        this.curr1 = UI.prompt("Your Currency (S/U/E):").toUpperCase().charAt(0);
+        String name1 = SafeUI.prompt("Name:", SafeUI::validateName);
+        String acc1 = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
+        String passw1 = SafeUI.prompt("Old Password:", SafeUI::validatePassword);
+        String curr1 = SafeUI.prompt("Currency (e.g., S, U, E):", SafeUI::validateCurrency);
+        this.name1 = name1;
+        this.acc1  = acc1;
+        this.passw1 = passw1;
+        this.curr1 = curr1.toUpperCase().charAt(0);
         
         UI.drawSeparator();
         
         // Receiver Info
-        this.name2 = UI.prompt("Receiver Name:");
-        this.acc2  = UI.prompt("Receiver Account #:");
-        this.curr2 = UI.prompt("Receiver Currency (S/U/E):").toUpperCase().charAt(0);
+        String name2 = SafeUI.prompt("Receiver Name:", SafeUI::validateName);
+        String acc2 = SafeUI.prompt("Receiver Account Number:", SafeUI::validateAccountNumber);
+        String curr2 = SafeUI.prompt("Receiver Currency (S/U/E):", SafeUI::validateCurrency);
+        this.name2 = name2;
+        this.acc2  = acc2;
+        this.curr2 = curr2.toUpperCase().charAt(0);
         
         UI.drawSeparator();
-        this.amount = Long.parseLong(UI.prompt("Amount to Transfer:"));
+        String amountStr = SafeUI.prompt("Amount to Transfer:", SafeUI::validateMoneyInput);
+        this.amount = SafeUI.validateMoneyInput(amountStr);
     }
 
     private int CONFIRMATION_STATE() {
@@ -84,7 +92,7 @@ public class TransferMoneyHandle {
             UI.drawBox("CONFIRM TRANSFER");
             UI.display("FROM: " + this.name1 + " (" + this.acc1 + ")");
             UI.display("TO:   " + this.name2 + " (" + this.acc2 + ")");
-            UI.display("AMT:  " + this.amount + " " + this.curr1 + " -> " + this.curr2);
+            UI.display("AMT:  " + String.format("%.2f", this.amount / 100.0) + " " + this.curr1 + " -> " + this.curr2);
             UI.drawSeparator();
             
             String confirm = UI.prompt("Proceed with transfer? (y/n)");

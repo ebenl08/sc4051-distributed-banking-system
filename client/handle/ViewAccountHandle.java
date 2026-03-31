@@ -52,9 +52,14 @@ public class ViewAccountHandle {
     private void INPUT_STATE() {
         UI.clearScreen();
         UI.drawBox("VIEW ACCOUNT");
-        this.name = UI.prompt("Enter account name:");
-        this.accountId = UI.prompt("Enter account number:");
-        this.password = UI.prompt("Enter account password:");
+
+        String name = SafeUI.prompt("Name:", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
+        
+        this.name = name;
+        this.accountId = account;
+        this.password = password;
     }
 
     private int CONFIRMATION_STATE() {

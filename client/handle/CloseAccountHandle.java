@@ -53,9 +53,14 @@ public class CloseAccountHandle {
     private void INPUT_STATE() {
         UI.clearScreen();
         UI.drawBox("CLOSE ACCOUNT");
-        this.name = UI.prompt("Enter account name:");
-        this.account = UI.prompt("Enter account number:");
-        this.password = UI.prompt("Enter account password:");
+
+        String name = SafeUI.prompt("Name:", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
+
+        this.name = name;
+        this.account = account;
+        this.password = password;
     }
 
     private int CONFIRMATION_STATE() {

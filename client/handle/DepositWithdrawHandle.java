@@ -58,13 +58,18 @@ public class DepositWithdrawHandle {
         UI.clearScreen();
         UI.drawBox("DEPOSIT/WITHDRAW");
         
-        this.name = UI.prompt("Enter name:");
-        this.account = UI.prompt("Enter account number:");
-        this.password = UI.prompt("Enter password:");
-        this.currency = UI.prompt("Enter currency (e.g., S, U, E):");
+        String name = SafeUI.prompt("Name:", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
+        String currency = SafeUI.prompt("Currency (e.g., S, U, E):", SafeUI::validateCurrency);
+
+        this.name = name;
+        this.account = account;
+        this.password = password;
+        this.currency = currency.toUpperCase();
         
         String amountStr = UI.prompt("Enter amount:");
-        this.amount = Long.parseLong(amountStr);
+        this.amount = SafeUI.validateMoneyInput(amountStr);
 
         UI.drawSeparator();
         String action = UI.prompt("Deposit or Withdraw? (d/w)");
@@ -81,7 +86,7 @@ public class DepositWithdrawHandle {
             UI.drawBox("CONFIRM " + this.actionStr);
             UI.display("Account:  " + this.account);
             UI.display("Currency: " + this.currency);
-            UI.display("Amount:   " + this.amount);
+            UI.display("Amount:   " + String.format("%.2f", this.amount / 100.0));
             UI.drawSeparator();
             
             String confirm = UI.prompt("Confirm " + this.actionStr + " request? (y/n)");

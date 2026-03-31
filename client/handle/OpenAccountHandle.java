@@ -54,14 +54,15 @@ public class OpenAccountHandle {
         UI.clearScreen();
         UI.drawBox("OPEN NEW ACCOUNT");
         
-        this.name = UI.prompt("Enter name:");
-        this.password = UI.prompt("Enter password:");
-        
-        String currInput = UI.prompt("Enter currency (S/U/E):");
-        this.currency = currInput.isEmpty() ? 'S' : currInput.toUpperCase().charAt(0);
-        
-        String balanceStr = UI.prompt("Enter initial balance:");
-        this.initialBalance = Long.parseLong(balanceStr);
+        String name = SafeUI.prompt("Name:", SafeUI::validateName);
+        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
+        String currency = SafeUI.prompt("Currency (e.g., S, U, E):", SafeUI::validateCurrency);
+        String balance = SafeUI.prompt("Initial Balance:", SafeUI::validateMoneyInput);
+
+        this.name = name;
+        this.password = password;
+        this.currency = currency.toUpperCase().charAt(0);
+        this.initialBalance = SafeUI.validateMoneyInput(balance);
     }
 
     private int CONFIRMATION_STATE() {
@@ -70,7 +71,7 @@ public class OpenAccountHandle {
             UI.drawBox("CONFIRM DETAILS");
             UI.display("Name:     " + this.name);
             UI.display("Currency: " + this.currency);
-            UI.display("Balance:  " + this.initialBalance);
+            UI.display("Balance:  " + String.format("%.2f", this.initialBalance / 100.0));
             UI.drawSeparator();
             
             String confirm = UI.prompt("Create this account? (y/n)");

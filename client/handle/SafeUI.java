@@ -107,11 +107,11 @@ public class SafeUI {
         }
         String cleaned = input.trim().toUpperCase();
         switch (cleaned) {
-            case "SGD":
+            case "S":
                 return Constants.SGD;
-            case "EUR":
+            case "E":
                 return Constants.EUR;
-            case "USD":
+            case "U":
                 return Constants.USD;
             default:
                 throw new IllegalArgumentException("Unsupported Currency");
