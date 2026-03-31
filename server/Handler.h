@@ -28,7 +28,7 @@ using namespace std;
 
 class Handler{
   public:
-    Handler();
+    Handler(Socket& sock);
 
     Response handle_service(Request request, const sockaddr_in& clientAddr);
 

@@ -13,12 +13,15 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector> 
+#include <unordered_map>
 
 #include "server/net/Marshalling.h"
-#include "server/Handler.h"
 #include "server/Constant.h"
+#include "server/protocol/Args.h"
+#include "server/protocol/Packet.h"
+#include "server/net/Socket.h"
 
-#define BUFFER_SIZE 1500
+class Handler;
 
 typedef struct {
     int32_t semanticInvoc;
@@ -44,7 +47,7 @@ struct MapKeyHasher {
 
 class UDPServer{
   public:
-    Handler handler;  
+    Handler* handler;  
 
     UDPServer(serverConfig config);
     UDPServer();

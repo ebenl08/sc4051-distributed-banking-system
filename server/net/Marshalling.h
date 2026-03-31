@@ -14,9 +14,9 @@
 #include <iostream>
 #include <cstdint>          // for uint64_t, int64_t, etc.
 
-using namespace std;
+#include "server/Constant.h"
 
-#define BUFFER_SIZE 1500
+using namespace std;
 
 // 64-bit conversions
 static inline uint64_t (htonll)(uint64_t value) {

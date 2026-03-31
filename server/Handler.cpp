@@ -1,6 +1,8 @@
-#include "server/Handler.h"
+#include "Handler.h"
 
 #define argvec std::vector<Argument>
+
+Handler::Handler(Socket& sock) : monitorManager(sock) {}
 
 void Handler::notify_monitor_clients(const std::string& msg) {
     monitorManager.notifyAll(msg);

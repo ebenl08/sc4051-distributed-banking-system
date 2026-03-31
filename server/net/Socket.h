@@ -13,9 +13,9 @@
 #include <unistd.h>
 #include <iostream>
 
-using namespace std;
+#include "server/Constant.h"
 
-#define BUFFER_SIZE 1500
+using namespace std;
 
 class Socket{
   public:
