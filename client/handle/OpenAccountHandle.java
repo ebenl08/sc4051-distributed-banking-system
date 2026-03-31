@@ -1,9 +1,9 @@
 package client.handle;
 
-import client.net.UDPClient;
-import client.protocol.Response;
-import client.protocol.Args;
 import client.Constants;
+import client.net.UDPClient;
+import client.protocol.Args;
+import client.protocol.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -99,6 +99,7 @@ public class OpenAccountHandle {
         } else {
             String errorMsg = (String) response.payload[0].value;
             UI.printError("Failed to open account: " + errorMsg);
+            UI.printError("Please try again with different details"); 
         }
     }
     
