@@ -13,13 +13,13 @@
 #include "server/Constant.h"
 #include "server/protocol/Args.h"
 
-typedef struct{
+struct ServiceSchema {
     std::vector<DataType> inputTypes;
     std::vector<DataType> outputTypes;
     std::vector<DataType> errorTypes = {
         TYPE_STRING // error message
     };
-}ServiceSchema;
+};
 
 class SchemaFactory {
     public:

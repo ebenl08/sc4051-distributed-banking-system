@@ -19,15 +19,16 @@
 #include "server/Constant.h"
 #include "server/protocol/Args.h"
 #include "server/protocol/Packet.h"
-#include "server/net/Socket.h"
 
-class Handler;
+#include "server/net/Socket.h"
+#include "server/Handler.h"
 
 typedef struct {
     int32_t semanticInvoc;
     int32_t maxRetry;
     bool debug;
-    Socket* socket;
+    Socket& socket;
+    Handler handler;
 } serverConfig;
 
 struct MapKey {
@@ -47,10 +48,10 @@ struct MapKeyHasher {
 
 class UDPServer{
   public:
-    Handler* handler;  
+    Handler handler;  
 
-    UDPServer(serverConfig config);
     UDPServer();
+    UDPServer(serverConfig config);
 
     int32_t startServer();
     int32_t serveRequest(char* buffer, char* response, sockaddr_in& clientaddr);

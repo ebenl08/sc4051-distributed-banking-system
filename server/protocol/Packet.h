@@ -10,19 +10,19 @@
 
 #include "server/protocol/Args.h"
 
-typedef struct {
+struct Request {
     int32_t reqID;
     int32_t serviceID;
     int32_t payloadLength; // for internal use, not transmitted
     std::vector<Argument> args;
-} Request;
+};
 
-typedef struct {
+struct Response {
     int32_t reqID;
     char statusCode;
     int32_t payloadLength; // for internal use, not transmitted
     std::vector<Argument> args;
-} Response;
+};
 
 
 #endif

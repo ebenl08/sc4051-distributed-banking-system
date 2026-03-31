@@ -11,18 +11,21 @@
 using namespace std;
 
 
-
 UDPServer::UDPServer(serverConfig config) : 
-    socket(*config.socket), 
+    socket(config.socket), 
     semanticInvoc(config.semanticInvoc), 
     maxRetry(config.maxRetry), 
-    debug(config.debug) {}
+    debug(config.debug),
+    handler(config.handler)
+{
+}
 
 
 int32_t UDPServer::startServer(){
     char buffer[BUFFER_SIZE];
     char response[BUFFER_SIZE];
     sockaddr_in clientaddr;
+    
 
     while(true){
         // wait for request
@@ -62,7 +65,7 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
     }
     else{
         // process request and generate response
-        response_pkt = this->handler->handle_service(request, clientaddr);
+        response_pkt = this->handler.handle_service(request, clientaddr);
 
         // cache response for at-most-one semantic invocation
         if(semanticInvoc == AT_MOST_ONE_SEM_INVO) {
