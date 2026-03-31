@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 # include "server/Account.h"
 # include "server/Constant.h"

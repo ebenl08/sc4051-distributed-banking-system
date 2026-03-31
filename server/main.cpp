@@ -12,6 +12,7 @@
 #include "server/net/Marshalling.h"
 #include "server/net/Socket.h"
 #include "server/Handler.h"
+#include "server/net/PacketBuilder.h"
 
 using namespace std;
 
@@ -43,20 +44,20 @@ int main(){
 
     Socket sock = Socket(port, hostname);
 
-    Handler handler;
+    Handler handler(sock);
 
     vector<CachedReply> cache;
 
     do {
         char buffer[BUFFER_SIZE];
 
-        sockaddr_in clientaddr = sock.receive(buffer);
+        sockaddr_in clientaddr;
+        sock.receive(buffer, clientaddr);
 
         printf("Message received\n");
 
         int32_t reqID = Marshalling::unmarshalInt32(buffer);
         int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
-        handler.setCurrentClientAddr(clientaddr);
 
         printf("[Client %s port %d] Packet received\n",
                inet_ntoa(clientaddr.sin_addr),
@@ -75,7 +76,10 @@ int main(){
         char respond[BUFFER_SIZE];
         int length = 0;
 
-        int32_t statusCode = UDPServer::Server(buffer, respond, length);
+        int parseCounter = 0;
+        Request request = PacketBuilder::parseRequestPacket(buffer, parseCounter);
+        Response response = handler.handle_service(request, clientaddr);
+        int32_t statusCode = response.statusCode;
 
         if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
             CachedReply entry;

@@ -54,11 +54,10 @@ int32_t AccountManager::closeAccount(string username, int32_t accountNumber, str
         Account& account = this->getAccount(username, accountNumber);
         if(account.getPassword() == password){
             this->accountStore.erase(
-                std::remove(
-                    this->accountStore.begin(), 
-                    this->accountStore.end(), 
-                    account
-                ), 
+                std::remove_if(this->accountStore.begin(), this->accountStore.end(),
+                    [&](const Account& a) {
+                        return a.getAccountNumber() == accountNumber;
+                    }),
                 this->accountStore.end()
             );
         } else{return INVALID_CREDENTIALS;}
@@ -163,7 +162,7 @@ int32_t AccountManager::accountNumberCheck(int32_t accountNumber){
     return 0;
 }
 
-int32_t main(){
+//int32_t main(){
     // AccountManager* accountManager = new AccountManager();
     // accountManager->addAccount("user1", "password1", SGD);
     // accountManager->addAccount("user1", "password1", USD);
@@ -177,4 +176,4 @@ int32_t main(){
     // accountManager->transfer("user1", 1, "password1", SGD, 5000, "user2", 3, USD);
     // accountManager->closeAccount("user1", 1, "password1", SGD);
     // delete accountManager;
-}
+//}

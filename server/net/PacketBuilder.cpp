@@ -1,11 +1,11 @@
 
-#include "server/net/PacketBuilder.h"
+#include "PacketBuilder.h"
 #include "server/protocol/SchemaFactory.h"
 #include "server/Constant.h"
 
 
 Response PacketBuilder::parseCallbackResponsePacket(char* buffer, int& counter) {
-    Response response; int32_t counter = 0;
+    Response response;
     response.reqID = Marshalling::unmarshalInt32(buffer + counter); counter += 4;
     response.statusCode = Marshalling::unmarshalChar(buffer + counter++);
     response.args = parseArgs(buffer, counter, {TYPE_STRING});

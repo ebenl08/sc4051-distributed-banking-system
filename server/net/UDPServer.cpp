@@ -62,7 +62,7 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
     }
     else{
         // process request and generate response
-        response_pkt = this->handler.handle_service(request, clientaddr);
+        response_pkt = this->handler->handle_service(request, clientaddr);
 
         // cache response for at-most-one semantic invocation
         if(semanticInvoc == AT_MOST_ONE_SEM_INVO) {
