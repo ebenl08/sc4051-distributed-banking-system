@@ -1,5 +1,5 @@
-#ifndef HANDLER_H
-#define HANDLER_H
+#ifndef SERVER_HANDLER_H
+#define SERVER_HANDLER_H
 
 #include <cstdio>
 #include <cstdlib>          // for exit() function
@@ -9,41 +9,48 @@
 
 #include <string>
 
-#include "Constant.h"
-#include "Account.h"
-#include "AccountManager.h"
-#include "MonitorManager.h"
-#include "Marshalling.h"
-#include "Argument.h"
-#include "Constant.h"
-#include "Socket.h"
+#include "server/Constant.h"
+#include "server/Account.h"
+#include "server/AccountManager.h"
+#include "server/MonitorManager.h"
+
+#include "server/net/Socket.h"
+#include "server/net/Marshalling.h"
+
+
+#include "server/protocol/Args.h"
+#include "server/protocol/Packet.h"
+
+#define argvec std::vector<Argument>
 
 using namespace std;
 
+
 class Handler{
   public:
-    Handler();
-    void setCurrentClientAddr(const sockaddr_in& clientaddr);
-    void setSocket(Socket* sock);
+    Handler(Socket& sock);
 
-    int32_t service1(const std::vector<Argument>& args, char* respond, int& length);
-    int32_t service2(const std::vector<Argument>& args, char* respond, int& length);
-    int32_t service3(const std::vector<Argument>& args, char* respond, int& length);
-    int32_t service4(const std::vector<Argument>& args, char* respond, int& length);
-    int32_t service5(const std::vector<Argument>& args, char* respond, int& length);
-    int32_t service6(const std::vector<Argument>& args, char* respond, int& length);
-    int32_t service7(const std::vector<Argument>& args, char* respond, int& length);
+    Response handle_service(Request request, const sockaddr_in& clientAddr);
+
+    argvec open_account(const argvec& args, int32_t& statusCode);
+    argvec close_account(const argvec& args, int32_t& statusCode);
+    argvec deposit_withdraw(const argvec& args, int32_t& statusCode);
+    argvec view_account(const argvec& args, int32_t& statusCode);
+    argvec transfer(const argvec& args, int32_t& statusCode);
+    argvec change_password(const argvec& args, int32_t& statusCode);
+    argvec register_monitor_client(const argvec& args, const sockaddr_in& clientAddr, int32_t& statusCode);
 
   private:
+    
+    // Application Layer
     AccountManager accountManager;
     MonitorManager monitorManager;
+    
+    // Observer
+    vector<sockaddr_in> active_clients;
+    void notify_monitor_clients(const std::string& message);
 
-    sockaddr_in currentClientAddr;
-    bool hasCurrentClientAddr = false;
 
-    Socket* serverSocket = nullptr;
-
-    void notifyMonitorClients(const std::string& message);
 };
 
 

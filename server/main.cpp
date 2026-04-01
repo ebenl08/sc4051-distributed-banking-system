@@ -8,10 +8,11 @@
 #include <string>
 #include <arpa/inet.h>
 
-#include "UDPServer.h"
-#include "Marshalling.h"
-#include "Socket.h"
-#include "Handler.h"
+#include "server/net/UDPServer.h"
+#include "server/net/Marshalling.h"
+#include "server/net/Socket.h"
+#include "server/Handler.h"
+#include "server/net/PacketBuilder.h"
 
 using namespace std;
 
@@ -41,74 +42,97 @@ int main(){
     int port = 8080;
     const char* hostname = "localhost";
 
-    Socket sock = Socket(port, hostname);
+    cout << "Starting server on " << hostname << ":" << port << endl;
 
-    Handler handler;
+    cout << "Initializing socket..." << endl;
+    Socket sock(port, hostname);
 
-    vector<CachedReply> cache;
+    cout << "Initializing service handler and loading server configuration..." << endl;
 
-    do {
-        char buffer[BUFFER_SIZE];
+    Handler handler(sock);
+    serverConfig config = {
+        .semanticInvoc = AT_MOST_ONE_SEM_INVO,
+        .maxRetry = 3,
+        .socket = sock,
+        .handler = handler
+    };
+    UDPServer server(config);
 
-        sockaddr_in clientaddr = sock.receive(buffer);
+    cout << "Server is running and ready to accept requests." << endl;
 
-        printf("Message received\n");
+    server.startServer();
 
-        int32_t reqID = Marshalling::unmarshalInt32(buffer);
-        int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
-        handler.setCurrentClientAddr(clientaddr);
-        cout << "service ID: " << serviceID << endl;
-        printf("[Client %s port %d] Packet received\n",
-               inet_ntoa(clientaddr.sin_addr),
-               ntohs(clientaddr.sin_port));
+    cout << "Server has stopped." << endl;
+    
+    
+    
+    // vector<CachedReply> cache;
 
-        if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
-            int idx = findCachedReply(cache, reqID, clientaddr);
+    // do {
+    //     char buffer[BUFFER_SIZE];
 
-            if(idx != -1){
-                printf("Duplicate request detected. Resending cached response.\n");
-                sock.send(cache[idx].response, cache[idx].length, clientaddr);
-                continue;
-            }
-        }
+    //     sockaddr_in clientaddr;
+    //     sock.receive(buffer, clientaddr);
 
-        char respond[BUFFER_SIZE];
-        int length = 0;
+    //     printf("Message received\n");
 
-        int32_t statusCode = UDPServer::Server(buffer, respond, length);
+    //     int32_t reqID = Marshalling::unmarshalInt32(buffer);
+    //     int32_t serviceID = Marshalling::unmarshalInt32(buffer + 4);
 
-        if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
-            CachedReply entry;
-            entry.reqID = reqID;
-            entry.clientIP = inet_ntoa(clientaddr.sin_addr);
-            entry.clientPort = ntohs(clientaddr.sin_port);
-            memcpy(entry.response, respond, length);
-            entry.length = length;
-            cache.push_back(entry);
-        }
+    //     printf("[Client %s port %d] Packet received\n",
+    //            inet_ntoa(clientaddr.sin_addr),
+    //            ntohs(clientaddr.sin_port));
 
-        char sendBuffer[BUFFER_SIZE];
-        int counter = 0;
+    //     if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
+    //         int idx = findCachedReply(cache, reqID, clientaddr);
 
-        // reqID
-        Marshalling::marshal(sendBuffer + counter, reqID);
-        counter += 4;
+    //         if(idx != -1){
+    //             printf("Duplicate request detected. Resending cached response.\n");
+    //             sock.send(cache[idx].response, cache[idx].length, clientaddr);
+    //             continue;
+    //         }
+    //     }
 
-        // serviceID
-        Marshalling::marshal(sendBuffer + counter, serviceID);
-        counter += 4;
+    //     char respond[BUFFER_SIZE];
+    //     int length = 0;
 
-        // statusCode
-        Marshalling::marshal(sendBuffer + counter, statusCode);
-        counter += 4;
+    //     int parseCounter = 0;
+    //     Request request = PacketBuilder::parseRequestPacket(buffer, parseCounter);
+    //     Response response = handler.handle_service(request, clientaddr);
+    //     int32_t statusCode = response.statusCode;
 
-        // payload
-        memcpy(sendBuffer + counter, respond, length);
-        counter += length;
-        cout << "[main] total bytes sent = " << counter << endl;
-        sock.send(sendBuffer, counter, clientaddr);
+    //     if(serviceID == 1 || serviceID == 2 || serviceID == 3 || serviceID == 4){
+    //         CachedReply entry;
+    //         entry.reqID = reqID;
+    //         entry.clientIP = inet_ntoa(clientaddr.sin_addr);
+    //         entry.clientPort = ntohs(clientaddr.sin_port);
+    //         memcpy(entry.response, respond, length);
+    //         entry.length = length;
+    //         cache.push_back(entry);
+    //     }
 
-        printf("Response message sent.\n");
+    //     char sendBuffer[BUFFER_SIZE];
+    //     int counter = 0;
 
-    } while (true);
+    //     // reqID
+    //     Marshalling::marshal(sendBuffer + counter, reqID);
+    //     counter += 4;
+
+    //     // serviceID
+    //     Marshalling::marshal(sendBuffer + counter, serviceID);
+    //     counter += 4;
+
+    //     // statusCode
+    //     Marshalling::marshal(sendBuffer + counter, statusCode);
+    //     counter += 4;
+
+    //     // payload
+    //     memcpy(sendBuffer + counter, respond, length);
+    //     counter += length;
+
+    //     sock.send(sendBuffer, counter, clientaddr);
+
+    //     printf("Response message sent.\n");
+
+    // } while (true);
 }

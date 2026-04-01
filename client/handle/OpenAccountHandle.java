@@ -1,59 +1,117 @@
 package client.handle;
 
-import java.util.Scanner;
-
+import client.Constants;
 import client.net.UDPClient;
+import client.protocol.Args;
+import client.protocol.Response;
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 public class OpenAccountHandle {
 
-  private UDPClient udpClient;
+    private static final int SERVICE_ID = Constants.SERVICE_OPEN_ACCOUNT;
+    private final UDPClient client;
 
-  public OpenAccountHandle(UDPClient udpClient) {
-    this.udpClient = udpClient;
-  }
+    // State variables
+    private String name;
+    private String password;
+    private String currency;
+    private long initialBalance;
 
-  public void handle() {
-    
-    UI.clearScreen();
-    UI.clearAndHome();
-
-    // INPUT STATE
-    UI.drawBox("OPEN ACCOUNT");
-    String account = UI.prompt("Enter account name:");
-    String password = UI.prompt("Enter account password:");
-    String currency = UI.prompt("Enter account currency:");
-
-    
-    // CONFIRMATION STATE
-    UI.clearScreen();
-    UI.drawBox("CONFIRM OPEN ACCOUNT");
-    System.out.println("Account: " + account);
-    String confirm = UI.prompt("Confirm open account request? (y/n)");
-    
-    switch (confirm.toLowerCase()) {
-        case "y":
-          // send request to server to open account
-          // code = client.sendRequest(.....)
-          break;
-        case "n": 
-          UI.printSuccess("Open account request cancelled.");
-          return;
-        default: 
-          UI.printError("Invalid input. Please enter 'y' or 'n'.");
-          return;
-    }
-  
-    // RESULT STATE
-    UI.clearScreen();
-    UI.drawBox("OPEN ACCOUNT RESULT");
-    if (true) { // replace with actual success condition if(code)
-        UI.printSuccess("Account opened successfully.");
-    } else {
-        UI.printError("Failed to open account. Please try again.");
+    public OpenAccountHandle(UDPClient udpClient) {
+        this.client = udpClient;
     }
 
-    UI.clearAndHome();
+    public void handle() {
+        try {
+            this.INPUT_STATE();
 
-  }
+            if (this.CONFIRMATION_STATE() == 0) {
+                return;
+            }
 
+            // Schema: [string, string, char, int64]
+            Args[] payload = new Args[]{
+                Args.ofString(this.name),
+                Args.ofString(this.password),
+                Args.ofChar(SafeUI.currencyCodeToChar(this.currency)),
+                Args.ofInt64(this.initialBalance)
+            };
+
+            Response response = this.client.sendRequest(SERVICE_ID, payload);
+            this.RESULT_STATE(response);
+        } catch (IOException e) {
+            UI.printError("[I/O] Error: " + e.getMessage());
+        } catch (TimeoutException e) {
+            UI.printError("[TIMEOUT] Server is unavailable.");
+        } finally {
+            this.CLEAN();
+            UI.drawSeparator();
+            UI.prompt("Press Enter to return to menu...");
+        }
+    }
+
+    private void INPUT_STATE() {
+        UI.clearScreen();
+        UI.drawBox("OPEN NEW ACCOUNT");
+        
+        String name = SafeUI.prompt("Name            :", SafeUI::validateName);
+        String password = SafeUI.prompt("Password        :", SafeUI::validatePassword);
+        String currency = SafeUI.prompt("Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
+        String balance = SafeUI.prompt("Initial Balance :", SafeUI::validateMoneyInput);
+
+        this.name = name;
+        this.password = password;
+        this.currency = currency.toUpperCase();
+        this.initialBalance = SafeUI.validateMoneyInput(balance);
+    }
+
+    private int CONFIRMATION_STATE() {
+        while (true) {
+            UI.clearScreen();
+            UI.drawBox("CONFIRM DETAILS");
+            UI.display("Name        : " + this.name);
+            UI.display("Currency    : " + this.currency);
+            UI.display("Balance     : " + String.format("%.2f", this.initialBalance / 100.0));
+            UI.drawSeparator();
+            
+            String confirm = SafeUI.prompt("Create this account? (y/n)", SafeUI::validateYesNo);
+            switch (confirm.toLowerCase()) {
+                case "y":
+                    return 1;
+                case "n":
+                    UI.clearScreen();
+                    UI.printSuccess("Request cancelled.");
+                    return 0;
+            }
+        }
+    }
+
+    private void RESULT_STATE(Response response) {
+        UI.clearScreen();
+        UI.drawBox("OPEN ACCOUNT RESULT");
+        
+        if (response.isSuccess()) {
+            // Per your doc, this returns [string] (the new account number)
+            int accountNum = (int) response.payload[0].value;
+            UI.printSuccess("Account created successfully!");
+            UI.drawSeparator();
+            UI.display("Your Account Number is: " + accountNum);
+            UI.display("Please keep it safe for future transactions.");
+
+        } else {
+            String errorMsg = (String) response.payload[0].value;
+            UI.printError("Failed to open account: " + errorMsg);
+            UI.printError("Please try again with different details"); 
+        }
+    }
+    
+
+
+    private void CLEAN() {
+        this.name = null;
+        this.password = null;
+        this.currency = null;
+        this.initialBalance = 0;
+    }
 }

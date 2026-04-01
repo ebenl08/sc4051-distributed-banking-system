@@ -1,56 +1,106 @@
 package client.handle;
 
 import client.net.UDPClient;
+import client.protocol.Response;
+import client.protocol.Args;
+import client.Constants;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
 
 public class CloseAccountHandle {
 
-  private UDPClient client;
+    private static final int SERVICE_ID = Constants.SERVICE_CLOSE_ACCOUNT;
+    private final UDPClient client;
 
-  public CloseAccountHandle(UDPClient client) {
-    this.client = client;
-  }
+    // Temporary state variables
+    private String name;
+    private String account;
+    private String password;
 
-  public void handle() {
-    
-    UI.clearScreen();
-    UI.clearAndHome();
-
-    // INPUT STATE
-    UI.drawBox("CLOSE ACCOUNT");
-    String account = UI.prompt("Enter account name:");
-    String password = UI.prompt("Enter account password:");
-    String currency = UI.prompt("Enter account currency:");
-
-    
-    // CONFIRMATION STATE
-    UI.clearScreen();
-    UI.drawBox("CONFIRM CLOSE ACCOUNT");
-    System.out.println("Account: " + account);
-    String confirm = UI.prompt("Confirm close account request? (y/n)");
-    
-    switch (confirm.toLowerCase()) {
-        case "y":
-          // send request to server to close account
-          // code = client.sendRequest(.....)
-          break;
-        case "n": 
-          UI.printSuccess("Close account request cancelled.");
-          return;
-        default: 
-          UI.printError("Invalid input. Please enter 'y' or 'n'.");
-          return;
-    }
-  
-    // RESULT STATE
-    UI.clearScreen();
-    UI.drawBox("CLOSE ACCOUNT RESULT");
-    if (true) { // replace with actual success condition if(code)
-        UI.printSuccess("Account closed successfully.");
-    } else {
-        UI.printError("Failed to close account. Please try again.");
+    public CloseAccountHandle(UDPClient client) {
+        this.client = client;
     }
 
-    UI.clearAndHome();
+    public void handle() {
+        try {
+            this.INPUT_STATE();
 
-  }
+            if (this.CONFIRMATION_STATE() == 0) {
+                return;
+            }
+
+            // [string, string, string] -> name, account#, password
+            Args[] payload = new Args[]{
+                Args.ofString(this.name),
+                Args.ofInt32(Integer.parseInt(this.account)),
+                Args.ofString(this.password)
+            };
+
+            Response response = this.client.sendRequest(SERVICE_ID, payload);
+            this.RESULT_STATE(response);
+
+        } catch (IOException e) {
+            UI.printError("[I/O] Error occurred: " + e.getMessage());
+        } catch (TimeoutException e) {
+            UI.printError("[TIMEOUT] Server did not respond.");
+        } finally {
+            this.CLEAN();
+            UI.drawSeparator();
+            UI.prompt("Press Enter to return to menu...");
+        }
+    }
+
+    private void INPUT_STATE() {
+        UI.clearScreen();
+        UI.drawBox("CLOSE ACCOUNT");
+
+        String name = SafeUI.prompt("Name            :", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number  :", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password       :", SafeUI::validatePassword);
+
+        this.name = name;
+        this.account = account;
+        this.password = password;
+    }
+
+    private int CONFIRMATION_STATE() {
+        while (true) {
+            UI.clearScreen();
+            UI.drawBox("CONFIRM CLOSE ACCOUNT");
+            UI.display("Name        : " + this.name);
+            UI.display("Account     : " + this.account);
+            UI.drawSeparator();
+            String confirm = UI.prompt("Close this account PERMANENTLY? (y/n)");
+
+            switch (confirm.toLowerCase()) {
+                case "y":
+                    return 1;
+                case "n":
+                    UI.clearScreen();
+                    UI.printSuccess("Close account request cancelled.");
+                    return 0;
+                default:
+                    UI.printError("Invalid input. Please enter 'y' or 'n'.");
+            }
+        }
+    }
+
+    private void RESULT_STATE(Response response) {
+        UI.clearScreen();
+        UI.drawBox("CLOSE ACCOUNT RESULT");
+        if (response.isSuccess()) {
+            UI.printSuccess("Account closed successfully.");
+        } else {
+            // Assuming payload[0] contains the error message from server
+            String errorMsg = (String) response.payload[0].value;
+            UI.printError("Failed to close account: " + errorMsg);
+        }
+    }
+
+    private void CLEAN() {
+        this.name = null;
+        this.account = null;
+        this.password = null;
+    }
 }

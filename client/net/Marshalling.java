@@ -5,18 +5,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Marshalling {
+
   public static byte[] marshal(int value){
-    ByteBuffer buffer = ByteBuffer.wrap(new byte[]{
+    return new byte[]{
       (byte) (value >> 24), 
       (byte) (value >> 16),
       (byte) (value >> 8),
       (byte) (value),
-    }).order(ByteOrder.BIG_ENDIAN);
-    return buffer.array();
+    };
+
   }
 
   public static byte[] marshal(long value){
-    ByteBuffer buffer = ByteBuffer.wrap(new byte[]{
+    return new byte[]{
       (byte) (value >> 56), 
       (byte) (value >> 48),
       (byte) (value >> 40),
@@ -25,9 +26,7 @@ public class Marshalling {
       (byte) (value >> 16),
       (byte) (value >> 8),
       (byte) (value),
-    }).order(ByteOrder.BIG_ENDIAN);
-
-    return buffer.array();
+    };
   }
 
   public static byte[] marshal(float value){
@@ -37,34 +36,41 @@ public class Marshalling {
 
   public static byte[] marshal(String value){
     byte[] buffer = new byte[4 + value.length()];
+    byte[] lengthBytes = marshal(value.length());
+    System.arraycopy(lengthBytes, 0, buffer, 0, 4);
     
     for(int i = 0; i < value.length(); i++){
       buffer[i + 4] = (byte) value.charAt(i);
     }
-    return ByteBuffer.wrap(buffer)
-        .order(ByteOrder.BIG_ENDIAN)
-        .array();
+    return buffer;
+  }
+
+  public static byte[] marshal(char value){
+    byte[] out = {(byte) value};
+    return out;
   }
   
-  // Java byte is signed so
+
+  
+  // Java byte is signed (-128 to 127), we need to & with 0xFF to get the unsigned value
   public static int unmarshalInt32(byte[] buffer, int offset){
-    buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
-    return (int) (buffer[offset] & 0xFF) << 24
-         | (buffer[offset + 1] & 0xFF) << 16 
-         | (buffer[offset + 2] & 0xFF) << 8 
-         | (buffer[offset + 3] & 0xFF);
+    // buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
+    return  ((buffer[offset]     & 0xFF) << 24) |
+            ((buffer[offset + 1] & 0xFF) << 16) |
+            ((buffer[offset + 2] & 0xFF) << 8)  |
+            ((buffer[offset + 3] & 0xFF));
   }
 
   public static long unmarshalInt64(byte[] buffer, int offset){
-    buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
-    return ((long) buffer[offset] & 0xFF) << 56
-         | ((long) buffer[offset + 1] & 0xFF) << 48
-         | ((long) buffer[offset + 2] & 0xFF) << 40 
-         | ((long) buffer[offset + 3] & 0xFF) << 32
-         | ((long) buffer[offset + 4] & 0xFF) << 24 
-         | ((long) buffer[offset + 5] & 0xFF) << 16
-         | ((long) buffer[offset + 6] & 0xFF) << 8 
-         | ((long) buffer[offset + 7] & 0xFF);
+    // buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
+    return ((long) (buffer[offset] & 0xFF) << 56)
+         | ((long) (buffer[offset + 1] & 0xFF) << 48)
+         | ((long) (buffer[offset + 2] & 0xFF) << 40 )
+         | ((long) (buffer[offset + 3] & 0xFF) << 32)
+         | ((long) (buffer[offset + 4] & 0xFF) << 24 )
+         | ((long) (buffer[offset + 5] & 0xFF) << 16)
+         | ((long) (buffer[offset + 6] & 0xFF) << 8 )
+         | ((long) (buffer[offset + 7] & 0xFF));
   }
 
   public static float unmarshalFloat(byte[] buffer, int offset){
@@ -73,15 +79,17 @@ public class Marshalling {
   }
 
   public static String unmarshalString(byte[] buffer, int offset){
-    buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
-    int length = unmarshalInt32(buffer, offset);
-    offset += 4;
-
-    String value = new String(buffer, StandardCharsets.UTF_8);
-    for(int i = 0; i < length; i++){
-      value += buffer[offset + i];
-    }
+    // buffer = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).array();
+    int length = unmarshalInt32(buffer, offset); offset += 4;
+    String value = new String(buffer, offset, length,  StandardCharsets.UTF_8);
+    // for(int i = 0; i < length; i++){
+    //   value += buffer[offset + i];
+    // }
     return value;
+  }
+
+  public static char unmarshalChar(byte[] buffer, int offset){
+    return (char) (buffer[offset] & 0xFF);
   }
 
   public static void main(String[] args) {

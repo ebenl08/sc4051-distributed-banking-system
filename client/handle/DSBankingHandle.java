@@ -2,15 +2,13 @@ package client.handle;
 
 import java.util.Scanner;
 
-
 import client.net.UDPClient;
 
 public class DSBankingHandle {
-
-    private static final Scanner scanner = new Scanner(System.in);
     
     // Handler instances
     private UDPClient client;
+
     private static OpenAccountHandle openAccountHandle;
     private static CloseAccountHandle closeAccountHandle;
     private static DepositWithdrawHandle depositWithdrawHandle;
@@ -33,11 +31,9 @@ public class DSBankingHandle {
     public void handle(){
         Runtime.getRuntime().addShutdownHook(new Thread(UI::showCursor));
         UI.hideCursor();
-        UI.clearAndHome();
 
         while (true) {
             UI.clearScreen();
-            UI.clearAndHome();
             UI.drawBox("ZEUS BANKING SYSTEM");
 
             System.out.println("  1. Open Account         5. View Account");
@@ -46,7 +42,7 @@ public class DSBankingHandle {
             System.out.println("  4. Transfer Money       8. Exit");
             UI.drawSeparator();
 
-            String choice = UI.prompt("SELECT OPTION (1-8)");
+            String choice = SafeUI.prompt("SELECT OPTION (1-8)", SafeUI::validateNumber);
             int choiceNum = Integer.parseInt(choice);
             switch (choiceNum) {
                 case 1 -> openAccountHandle.handle();
@@ -57,10 +53,12 @@ public class DSBankingHandle {
                 case 6 -> monitorHandle.handle();
                 case 7 -> changePasswordHandle.handle();
                 case 8 -> {
+                    UI.drawSeparator();
                     UI.printSuccess("Thank you for using Zeus Banking System!");
                     return;
                 }
                 default -> {
+                    UI.drawSeparator();
                     System.out.println(UI.RED + "Invalid option. Please try again." + UI.RESET);
                     UI.sleep();
                 }

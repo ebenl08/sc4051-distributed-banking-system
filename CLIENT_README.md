@@ -1,4 +1,4 @@
-# Java Client Setup, Compilation, and Execution Guide
+# ZeusBanking Client Setup
 
 ## 1. Change Directory
 First, navigate to the `client/` directory:
@@ -23,4 +23,6 @@ To execute a compiled class, use the following command from inside the `client/`
 ```sh
 java -cp bin <module-name>
 ```
+
+Alternatively you could also run the `run-client.sh` to open the actual CLI application or the `run-test-client.sh` to automatically load different request packages across the different services so that you don't need to spend time adding input into your application.
 

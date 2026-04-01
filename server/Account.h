@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "Constant.h"
+#include "server/Constant.h"
 
 using namespace std;
 
@@ -27,7 +27,7 @@ class Account{
         const int64_t getBalance() const;
         const string getBalanceString() const;
         void updateBalance(int64_t amount);
-        void updatePassword(string newPassword);
+        void updatePassword(std::string newPassword);
 
         friend bool operator==(const Account& lhs, const Account& rhs);
         friend ostream& operator<<(ostream& os, const Account& account);

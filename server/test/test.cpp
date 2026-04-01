@@ -11,7 +11,8 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "../Marshalling.h"
+#include "server/net/Socket.h"
+#include "server/net/Marshalling.h"
 
 // void marshalInt(char*  , int32_t val){
 // }
@@ -21,7 +22,7 @@
 void printBuffer(char* buffer, int32_t length){
   printf("0x");
   for(int i = 0; i < length; i++){
-    printf("%02x", buffer[i]);
+    printf("%02x", buffer[i] & 0xFF);
   }printf("\n");
 }
 
@@ -32,7 +33,7 @@ int main(){
   float valf = 3.14f;
   const char* valstr = "Hello I am a client";
   
-  char buffer[1500];
+  char buffer[1500] = {0};
   
   printf("%x\n", val32);
   Marshalling::marshal(buffer, val32);
@@ -63,6 +64,13 @@ int main(){
   Marshalling::marshal(buffer, valstr);
   valstr = Marshalling::unmarshalString(buffer);
   printf("%s\n", valstr);
+  
+  Socket socket = Socket(8080, "localhost");
+  while(true){
+    char recvBuffer[1500] = {0};
+    sockaddr_in clientaddr = socket.receive(recvBuffer);
+    printBuffer(recvBuffer, 1500);
+  }
 
   return 0;
 }
