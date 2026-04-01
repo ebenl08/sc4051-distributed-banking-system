@@ -61,7 +61,7 @@ public class DepositWithdrawHandle {
         
         String name = SafeUI.prompt("Name            :", SafeUI::validateName);
         String account = SafeUI.prompt("Account Number  :", SafeUI::validateAccountNumber);
-        String password = SafeUI.prompt("Password       :", SafeUI::validatePassword);
+        String password = SafeUI.prompt("Password        :", SafeUI::validatePassword);
         String currency = SafeUI.prompt("Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
 
         this.name = name;
@@ -113,6 +113,7 @@ public class DepositWithdrawHandle {
         if (response.isSuccess()) {
             UI.printSuccess(this.actionStr + " successful.");
             // Your doc says this returns [string, int64] (msg, new balance)
+            UI.drawSeparator();
             UI.display("New Balance   : " + SafeUI.moneyToString((long) response.payload[0].value));
         } else {
             String errorMsg = (response.payload.length > 0) ? (String) response.payload[0].value : "Unknown error";

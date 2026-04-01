@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 
 public class PacketUtils {
 
-    static boolean debug = true;
+    static boolean debug = false;
     
     public static byte[] buildRequestMessage(Request request) {
         List<byte[]> message = new ArrayList<>();
@@ -96,7 +96,7 @@ public class PacketUtils {
             if(offset >= buffer.length){
                 break;
             }
-            System.out.println("Parsing argument of type " + type + " at offset " + offset);
+            // System.out.println("Parsing argument of type " + type + " at offset " + offset);
 
             switch (type) {
                 case Args.Type.STRING:

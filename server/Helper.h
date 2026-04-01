@@ -31,6 +31,33 @@
     #define pdebug(fmt, ...) do { } while (0)
 #endif
 
+#if INFO
+    #define pinfo(fmt, ...) \
+        do { \
+            time_t now; \
+            time(&now); \
+            char buf[20]; \
+            struct tm *t = localtime(&now); \
+            strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", t); \
+            fprintf(stderr, ANSI_COLOR_GREEN "[%s] [INFO] %s:%d:%s():\n " ANSI_COLOR_RESET fmt "\n", \
+            buf, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
+        } while (0)
+#else
+    #define pinfo(fmt, ...) do { } while (0)
+#endif
+
+
+#define pwarn(fmt, ...) \
+    do { \
+        time_t now; \
+        time(&now); \
+        char buf[20]; \
+        struct tm *t = localtime(&now); \
+        strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", t); \
+        fprintf(stderr, ANSI_COLOR_RED "[%s] [WARN] %s:%d:%s():\n " fmt "\n"  ANSI_COLOR_RESET, \
+        buf, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
+    } while (0)
+
 
 static inline std::string hex_to_string(const char* data, size_t len) {
     std::stringstream ss;
@@ -40,6 +67,15 @@ static inline std::string hex_to_string(const char* data, size_t len) {
            << (static_cast<int>(data[i]) & 0xFF) << " ";
     }
     return ss.str();
+}
+
+static inline std::string currencyToString(char currency) {
+    switch (currency) {
+        case SGD: return "SGD";
+        case USD: return "USD";
+        case EUR: return "EUR";
+        default: return "UNKNOWN";
+    }
 }
 
 #endif

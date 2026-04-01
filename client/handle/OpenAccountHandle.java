@@ -98,7 +98,6 @@ public class OpenAccountHandle {
             UI.drawSeparator();
             UI.display("Your Account Number is: " + accountNum);
             UI.display("Please keep it safe for future transactions.");
-            UI.drawSeparator();
 
         } else {
             String errorMsg = (String) response.payload[0].value;

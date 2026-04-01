@@ -26,6 +26,7 @@ void MonitorManager::registerClient(const sockaddr_in& clientAddr, int32_t inter
         }
     }
 
+    pinfo("REGISTERING MONITOR CLIENT");
     MonitorClient newClient;
     newClient.addr = clientAddr;
     newClient.expiryTime = expiry;
@@ -81,7 +82,8 @@ int32_t MonitorManager::buildCallbackPacket(char* buffer, const std::string& mes
     request.reqID = 0;
     request.serviceID = SERVICE_MONITOR_LIVE; // Special service ID for monitor callbacks
     request.args.push_back(Argument(message.c_str()));
-    pdebug("MONITOR CALLBACK: %s\n%s", message.c_str(), 
+
+    pinfo("MONITOR CALLBACK MESSAGE: %s\n%s", message.c_str(), 
                 hex_to_string(buffer, PacketBuilder::buildCallbackPacket(buffer, request)).c_str());
     int32_t length = PacketBuilder::buildCallbackPacket(buffer, request);
     return length;
@@ -93,6 +95,9 @@ void MonitorManager::notifyAll(const std::string& message) {
     char packet[BUFFER_SIZE];
     int32_t length = buildCallbackPacket(packet, message);
 
+    if(!clients.empty()){
+        pinfo("NOTIFYING MONITOR CLIENTS");
+    }
     for (const MonitorClient& client : clients) {
         sock.send(packet, length, client.addr);
     }

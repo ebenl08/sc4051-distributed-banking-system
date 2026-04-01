@@ -42,7 +42,7 @@ public class DSBankingHandle {
             System.out.println("  4. Transfer Money       8. Exit");
             UI.drawSeparator();
 
-            String choice = UI.prompt("SELECT OPTION (1-8)");
+            String choice = SafeUI.prompt("SELECT OPTION (1-8)", SafeUI::validateNumber);
             int choiceNum = Integer.parseInt(choice);
             switch (choiceNum) {
                 case 1 -> openAccountHandle.handle();
@@ -53,10 +53,12 @@ public class DSBankingHandle {
                 case 6 -> monitorHandle.handle();
                 case 7 -> changePasswordHandle.handle();
                 case 8 -> {
+                    UI.drawSeparator();
                     UI.printSuccess("Thank you for using Zeus Banking System!");
                     return;
                 }
                 default -> {
+                    UI.drawSeparator();
                     System.out.println(UI.RED + "Invalid option. Please try again." + UI.RESET);
                     UI.sleep();
                 }

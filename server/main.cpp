@@ -48,6 +48,7 @@ int main(){
     Socket sock(port, hostname);
 
     cout << "Initializing service handler and loading server configuration..." << endl;
+
     Handler handler(sock);
     serverConfig config = {
         .semanticInvoc = AT_MOST_ONE_SEM_INVO,

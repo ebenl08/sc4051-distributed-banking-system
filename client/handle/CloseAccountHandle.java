@@ -68,7 +68,7 @@ public class CloseAccountHandle {
         while (true) {
             UI.clearScreen();
             UI.drawBox("CONFIRM CLOSE ACCOUNT");
-            UI.display("Name        :    " + this.name);
+            UI.display("Name        : " + this.name);
             UI.display("Account     : " + this.account);
             UI.drawSeparator();
             String confirm = UI.prompt("Close this account PERMANENTLY? (y/n)");

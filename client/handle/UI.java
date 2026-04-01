@@ -58,15 +58,15 @@ public class UI {
     }
 
     public static void printSuccess(String msg) {
-        System.out.println(GREEN + " [SUCCESS] " + msg + RESET);
+        System.out.println(GREEN + "[SUCCESS] " + msg + RESET);
         UI.sleep();
     }
     public static void printError(String msg) {
-        System.out.println(RED + " [ERROR] " + msg + RESET);
+        System.out.println(RED + "[ERROR] " + msg + RESET);
         UI.sleep();
     }
     public static void printWarning(String msg) {
-        System.out.println(YELLOW + " [WARNING] " + msg + RESET);
+        System.out.println(YELLOW + "[WARNING] " + msg + RESET);
         UI.sleep();
     }
 

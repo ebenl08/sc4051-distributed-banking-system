@@ -63,9 +63,9 @@ public class TransferMoneyHandle {
         UI.drawBox("TRANSFER MONEY");
 
         // Sender Info
-        String name1    = SafeUI.prompt("Sender Name:", SafeUI::validateName);
-        String acc1     = SafeUI.prompt("Sender Account Number:", SafeUI::validateAccountNumber);
-        String passw1   = SafeUI.prompt("Sender Password:", SafeUI::validatePassword);
+        String name1    = SafeUI.prompt("Sender Name            :", SafeUI::validateName);
+        String acc1     = SafeUI.prompt("Sender Account Number  :", SafeUI::validateAccountNumber);
+        String passw1   = SafeUI.prompt("Sender Password        :", SafeUI::validatePassword);
         String curr1    = SafeUI.prompt("Sender Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
         
         this.name1 = name1;
@@ -79,7 +79,7 @@ public class TransferMoneyHandle {
 
         // Receiver Info
         String name2 = SafeUI.prompt("Name              :", SafeUI::validateName);
-        String acc2 = SafeUI.prompt("Account Number     :", SafeUI::validateAccountNumber);
+        String acc2 = SafeUI.prompt("Account Number    :", SafeUI::validateAccountNumber);
         String curr2 = SafeUI.prompt("Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
         
         this.name2 = name2;
@@ -125,12 +125,11 @@ public class TransferMoneyHandle {
                 float amountTransferredFloat = (long) amount * (float) response.payload[3].value;
                 long amountTransferred = Math.round(amountTransferredFloat);
 
-                UI.display("Recipient        : " + response.payload[0].value);
-                UI.display("Recipient Acc#   : " + response.payload[1].value);
-                UI.display("Exchange Rate    : " + String.format("%.2f", (response.payload[3].value)));
-                UI.display("Amount Transferred: " + SafeUI.moneyToString(amountTransferred));
-                UI.display("Remaining Balance: " + curr1 + SafeUI.moneyToString((long) response.payload[4].value)
-                );
+                UI.display("Recipient           : " + response.payload[0].value);
+                UI.display("Recipient Acc#      : " + response.payload[1].value);
+                UI.display("Exchange Rate       : " + String.format("%.2f", (response.payload[3].value)));
+                UI.display("Amount Transferred  : " + curr2 + " " + SafeUI.moneyToString(amountTransferred));
+                UI.display("Remaining Balance   : " + curr1 + " " + SafeUI.moneyToString((long) response.payload[4].value));
             }
         } else {
             String error = (response.payload.length > 0) ? (String) response.payload[0].value : "Unknown error";

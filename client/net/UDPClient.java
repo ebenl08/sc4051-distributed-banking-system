@@ -186,7 +186,7 @@ public class UDPClient {
         while (this.monitorMode) {
             try {
                 byte[] callbackMessage = this.socket.receive();
-                System.out.println(Utils.bytesToHex(callbackMessage));
+                if(debug) {System.out.println(Utils.bytesToHex(callbackMessage));}
                 Request callbackRequest = PacketUtils.parseCallbackMessage(callbackMessage);
 
                 if(debug) {System.out.println(callbackRequest.toString());} 

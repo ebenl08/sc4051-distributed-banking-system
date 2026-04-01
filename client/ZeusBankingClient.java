@@ -36,7 +36,7 @@ public class ZeusBankingClient {
 
     Socket socket = new Socket("localhost", 8080);
     UDPClient client = new UDPClient.Builder()
-                            .setDebug(true)
+                            .setDebug(false)
                             .setSemanticInvoc(Constants.AT_LEAST_ONE_SEM_INVO)
                             .setTimeoutMs(1000)
                             .setMaxRetry(5)

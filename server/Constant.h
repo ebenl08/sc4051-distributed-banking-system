@@ -2,7 +2,8 @@
 # ifndef SERVER_CONSTANT_H
 # define SERVER_CONSTANT_H
 
-#define DEBUG true
+#define DEBUG false
+#define INFO true
 
 #define ACCOUNT_LENGTH 8
 

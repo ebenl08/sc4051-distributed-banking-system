@@ -48,7 +48,7 @@ argvec Handler::open_account(const argvec& args, int32_t& statusCode) {
     int64_t initialBalance = args[3].value.int64Value;
     int64_t newBalance = args[3].value.int64Value; // Reusing initialBalance to store new balance after deposit
 
-    pdebug("Creating accounts...");
+    pinfo("CREATE NEW USER ACCOUNT");
     int32_t accountNumber;
     statusCode = accountManager.addAccount(username, password, currency, accountNumber);
 
@@ -61,7 +61,7 @@ argvec Handler::open_account(const argvec& args, int32_t& statusCode) {
 
     response.push_back(Argument(accountNumber));
     pdebug("Account created successfully with account number: %d", accountNumber);
-    notify_monitor_clients("Account created: " + to_string(accountNumber));
+    notify_monitor_clients("[CREATE ACCOUNT] Account ID: " + to_string(accountNumber));
     return response;
 }
 
@@ -74,10 +74,13 @@ argvec Handler::close_account(const argvec& args, int32_t& statusCode) {
     statusCode = accountManager.closeAccount(name, accountNumber, password);
 
     if (statusCode == SUCCESS) {
-        notify_monitor_clients("Account closed: " + to_string(accountNumber));
+        pinfo("CLOSE USER ACCOUNT");
+        notify_monitor_clients("[CLOSE ACCOUNT] Account ID:" + to_string(accountNumber));
     } else if (statusCode == ACCOUNT_NOT_FOUND) {
+        pinfo("ACCOUNT NOT FOUND");
         response.push_back(Argument("Account not found!"));
     } else if (statusCode == INVALID_CREDENTIALS) {
+        pinfo("INVALID CREDENTIAL");
         response.push_back(Argument("Wrong password!"));
     } else {
         response.push_back(Argument("Internal error!"));
@@ -93,22 +96,30 @@ argvec Handler::deposit_withdraw(const argvec& args, int32_t& statusCode) {
     string password = args[2].value.stringValue;
     char currency = args[3].value.charValue;
     int64_t amount = args[4].value.int64Value;
-    int64_t newBalance = 0;
 
+    int64_t newBalance = 0;
+    string action = amount < 0 ? "WITHDRAWAL" : "DEPOSIT";
+
+    pinfo("BEGIN BALANCE %s", action.c_str());
     statusCode = accountManager.depositWithdraw(username, accountNumber, password, currency, amount, newBalance);
 
     if (statusCode == ACCOUNT_NOT_FOUND) {
+        pinfo("ACCOUNT NOT FOUND");
         response.push_back(Argument("Account not found!"));
     } else if (statusCode == INSUFFICIENT_FUNDS) {
+        pinfo("INSUFFICIENT BALANCE");
         response.push_back(Argument("Insufficient balance!"));
     } else if (statusCode == SUCCESS) {
-        pdebug("NEW BALANCE: %lld", newBalance);
+        pinfo("NEW BALANCE: %lld", newBalance);
         response.push_back(Argument(newBalance));
-        string log = "Account " + to_string(accountNumber) + (amount < 0 ? " withdrew: " : " deposited: ") + to_string(abs(amount));
-        notify_monitor_clients(log);
+
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << (amount / 100.0f);
+        notify_monitor_clients("[BALANCE " + action + "] Amount: " + oss.str());
     } else {
-        response.push_back(Argument("Transaction failed!"));
+        response.push_back(Argument("TRANSACTION FAILED!"));
     }
+    
     return response;
 }
 
@@ -126,6 +137,7 @@ argvec Handler::transfer(const argvec& args, int32_t& statusCode) {
     float exchangeRate;
     int64_t remainingBalance;
 
+    pinfo("TRANSFER MONEY");
     statusCode = accountManager.transfer(
             senderUser, senderAcc, 
             recipientUser, recipientAcc, 
@@ -141,9 +153,23 @@ argvec Handler::transfer(const argvec& args, int32_t& statusCode) {
         response.push_back(Argument(exchangeRate));
         response.push_back(Argument((int64_t) remainingBalance));
     } else {
-        response.push_back(Argument("Transfer failed"));
+        response.push_back(Argument("TRANSFER FAILED"));
     }
 
+    std::ostringstream oss_amount, oss_exchange, oss_final, oss_balance;
+    oss_amount << std::fixed << std::setprecision(2) << (amount / 100.0f);
+    oss_exchange << std::fixed << std::setprecision(2) << exchangeRate;
+    oss_final << std::fixed << std::setprecision(2) << ((amount * exchangeRate) / 100.0f);
+    oss_balance << std::fixed << std::setprecision(2) << (remainingBalance / 100.0f);
+
+    std::string info = "[MONEY TRANSFER] FROM: " + to_string(senderAcc)
+                 + " TO: " + to_string(recipientAcc)
+                 + "\n | AMOUNT: " + currencyToString(senderCurr) + " " + oss_amount.str()
+                 + "\n | EXCHANGE RATE: " + oss_exchange.str()
+                 + "\n | FINAL AMOUNT: " + currencyToString(recipientCurr) + " " + oss_final.str()
+                 + "\n | REMAINING BALANCE: " + currencyToString(senderCurr) + " " + oss_balance.str();
+
+    notify_monitor_clients(info);
     return response;
 }
 
@@ -155,6 +181,7 @@ argvec Handler::view_account(const argvec& args, int32_t& statusCode) {
     char currency;
     int64_t balance;
 
+    pinfo("VIEW ACCOUNT & RETRIEVE DATA");
     statusCode = accountManager.viewAccount(username, accountNumber, password, currency, balance);
 
     if (statusCode == SUCCESS) {
@@ -178,6 +205,7 @@ argvec Handler::register_monitor_client(const argvec& args, const sockaddr_in& c
         response.push_back(Argument("Invalid monitor interval"));
         return response;
     }
+    pinfo("MONITOR SESSION");
     monitorManager.registerClient(clientAddr, interval);
     statusCode = SUCCESS;
     return response;
@@ -190,11 +218,14 @@ argvec Handler::change_password(const argvec& args, int32_t& statusCode) {
     string password = args[2].value.stringValue;
     string newPassword = args[3].value.stringValue;
 
+    pinfo("CHANGED PASSWORD");
     statusCode = accountManager.changePassword(username, accountNumber, password, newPassword);
 
     if (statusCode != SUCCESS) {
         response.push_back(Argument("Password change failed."));
     }
+
+    notify_monitor_clients("[CHANGE PASSWORD] Account ID: " + to_string(accountNumber));
 
     return response;
 }

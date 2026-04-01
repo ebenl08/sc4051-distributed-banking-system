@@ -101,6 +101,12 @@ public class SafeUI {
         }
     }
 
+    public static void validateNumber(String input) throws IllegalArgumentException {
+        if (input == null || !input.matches("\\d+")) {
+            throw new IllegalArgumentException("Input must be a number.");
+        }
+    }
+
     public static long parseMoneyNumber(String input) {
         // BigDecimal handles the "clean" multiplication by 100
         return new BigDecimal(input)

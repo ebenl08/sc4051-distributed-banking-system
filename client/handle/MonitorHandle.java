@@ -117,6 +117,7 @@ public class MonitorHandle {
 
     public void ON_UPDATE_CALLBACK(Request callbackRequest) {
         int serviceId = callbackRequest.serviceId;
+        
         if (serviceId == Constants.SERVICE_MONITOR_LIVE) {
             String message = (String) callbackRequest.payload[0].value;
             UI.display(message);

@@ -105,7 +105,6 @@ public class ViewAccountHandle {
             UI.display("Name            : " + name);
             UI.display("Account Number  : " + accountNumber);
             UI.display("Current Balance : " + currencyStr + balanceStr);
-            UI.drawSeparator();
 
         } else {
             String errorMsg = (response.payload.length > 0) ? (String) response.payload[0].value : "Authentication failed";
