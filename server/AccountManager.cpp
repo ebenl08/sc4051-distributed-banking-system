@@ -72,7 +72,7 @@ int32_t AccountManager::closeAccount(string username, int32_t accountNumber, str
 int32_t AccountManager::depositWithdraw(string username, int32_t accountNumber, string password, char currency, int64_t amount, int64_t& newBalance){
     try {
         Account& account = this->getAccount(username, accountNumber);
-        int64_t newBalance = account.getBalance() + amount;
+        newBalance = account.getBalance() + amount;
         if(newBalance < 0) return INSUFFICIENT_FUNDS;
         account.updateBalance(newBalance);
         return SUCCESS;

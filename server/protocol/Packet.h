@@ -19,6 +19,8 @@ struct Request {
     int32_t payloadLength; 
     std::vector<Argument> args;
 
+    Request() : reqID(0), serviceID(0), payloadLength(0) {}
+
     std::string toString() const {
         std::stringstream ss;
         ss << "REQUEST [ID: " << reqID << " | Service: " << serviceID << "] Args(" << args.size() << "): ";
@@ -32,6 +34,8 @@ struct Response {
     char statusCode;
     int32_t payloadLength;
     std::vector<Argument> args;
+
+    Response() : reqID(0), statusCode(0), payloadLength(0) {}
 
     std::string toString() const {
         std::stringstream ss;

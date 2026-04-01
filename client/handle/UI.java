@@ -46,12 +46,13 @@ public class UI {
         System.out.println(BOLD + BRIGHT_CYAN +BOX_TOP);
         System.out.printf("║ %-52s ║\n", centerText(title, 52));
         System.out.println(BOX_BOTTOM + RESET);
+        UI.display("");
     }
     public static void drawSeparator() { System.out.println(BOLD + SEPARATOR + RESET); }
 
     
     public static String prompt(String message) {
-        System.out.print(" " + message + " > ");
+        System.out.print(message + "> ");
         Scanner s = new Scanner(System.in);
         return s.nextLine();
     }

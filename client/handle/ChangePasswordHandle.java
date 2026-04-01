@@ -51,6 +51,7 @@ public class ChangePasswordHandle{
         UI.printError("[TIMEOUT] Request timed out.");
     } finally {
         this.CLEAN();
+        UI.drawSeparator();
         UI.prompt("Press Enter to return to the main menu...");
     }
 
@@ -61,10 +62,10 @@ public class ChangePasswordHandle{
     while (true) {
         UI.clearScreen();
         UI.drawBox("CHANGE PASSWORD");
-        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
-        String name = SafeUI.prompt("Name:", SafeUI::validateName);
-        String oldPassword = SafeUI.prompt("Old Password:", SafeUI::validatePassword);
-        String newPassword = SafeUI.prompt("New Password:", SafeUI::validatePassword);
+        String account = SafeUI.prompt("Account Number  :", SafeUI::validateAccountNumber);
+        String name = SafeUI.prompt("Name            :", SafeUI::validateName);
+        String oldPassword = SafeUI.prompt("Old Password    :", SafeUI::validatePassword);
+        String newPassword = SafeUI.prompt("New Password    :", SafeUI::validatePassword);
         String confirmPassword = SafeUI.prompt("Confirm New Password:",
                   input -> SafeUI.validatePasswordConfirmation(newPassword, input));
         UI.drawSeparator();
@@ -81,8 +82,8 @@ public class ChangePasswordHandle{
     while(true){
       UI.clearScreen();
       UI.drawBox("CONFIRM CHANGE PASSWORD");
-      UI.display("Account: " + this.account);
-      UI.display("Name: " + this.name);
+      UI.display("Account     : " + this.account);
+      UI.display("Name        : " + this.name);
       String confirm = UI.prompt("Confirm change password request? (y/n)");
       
       switch (confirm.toLowerCase()) {

@@ -25,7 +25,7 @@ struct Argument {
         int32_t int32Value;
         int64_t int64Value;
         float   floatValue;
-        char* stringValue;
+        char*   stringValue;
         char    charValue;
     } value;
 
@@ -93,7 +93,7 @@ struct Argument {
             case TYPE_INT32:  snprintf(buf, sizeof(buf), "INT32: %d", value.int32Value); break;
             case TYPE_INT64:  snprintf(buf, sizeof(buf), "INT64: %lld", value.int64Value); break;
             case TYPE_FLOAT:  snprintf(buf, sizeof(buf), "FLOAT: %.2f", value.floatValue); break;
-            case TYPE_CHAR:   snprintf(buf, sizeof(buf), "CHAR: %c", value.charValue); break;
+            case TYPE_CHAR:   snprintf(buf, sizeof(buf), "CHAR: %c %d", value.charValue, (uint8_t) value.charValue); break;
             case TYPE_STRING: return std::string("STRING: ") + value.stringValue;
             default:          return "UNKNOWN TYPE";
         }

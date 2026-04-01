@@ -16,8 +16,8 @@ public class DepositWithdrawHandle {
     private String account;
     private String password;
     private String currency;
+    private String actionStr; // "DEPOSIT" or "WITHDRAWAL"
     private long amount;
-    private String actionStr;
 
     public DepositWithdrawHandle(UDPClient udpClient) {
         this.client = udpClient;
@@ -50,6 +50,7 @@ public class DepositWithdrawHandle {
             UI.printError("[TIMEOUT] Server is not responding.");
         } finally {
             this.CLEAN();
+            UI.drawSeparator();
             UI.prompt("Press Enter to return to menu...");
         }
     }
@@ -58,10 +59,10 @@ public class DepositWithdrawHandle {
         UI.clearScreen();
         UI.drawBox("DEPOSIT/WITHDRAW");
         
-        String name = SafeUI.prompt("Name:", SafeUI::validateName);
-        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
-        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
-        String currency = SafeUI.prompt("Currency (e.g., S, U, E):", SafeUI::validateCurrency);
+        String name = SafeUI.prompt("Name            :", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number  :", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password       :", SafeUI::validatePassword);
+        String currency = SafeUI.prompt("Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
 
         this.name = name;
         this.account = account;
@@ -73,19 +74,22 @@ public class DepositWithdrawHandle {
 
         UI.drawSeparator();
         String action = SafeUI.prompt("Deposit or Withdraw? (d/w)", SafeUI::validateDepositWithdraw);
-        this.actionStr = switch (action.toLowerCase()) {
-            case "d" -> "DEPOSIT";
-            case "w" -> "WITHDRAW";
-        };
+
+        if (action.toLowerCase().equals("w")) {
+            this.actionStr = "WITHDRAWAL";
+            this.amount = -this.amount; // Negate amount for withdrawal
+        }else{
+            this.actionStr = "DEPOSIT"; 
+        }
     }
 
     private int CONFIRMATION_STATE() {
         while (true) {
             UI.clearScreen();
             UI.drawBox("CONFIRM " + this.actionStr);
-            UI.display("Account:  " + this.account);
-            UI.display("Currency: " + this.currency);
-            UI.display("Amount:   " + String.format("%.2f", this.amount / 100.0));
+            UI.display("Account     : " + this.account);
+            UI.display("Currency    : " + this.currency);
+            UI.display("Amount      : " + String.format("%.2f", this.amount / 100.0));
             UI.drawSeparator();
             
             String confirm = UI.prompt("Confirm " + this.actionStr + " request? (y/n)");
@@ -109,9 +113,7 @@ public class DepositWithdrawHandle {
         if (response.isSuccess()) {
             UI.printSuccess(this.actionStr + " successful.");
             // Your doc says this returns [string, int64] (msg, new balance)
-            if (response.payload.length > 1) {
-                UI.display("New Balance: " + response.payload[1].value);
-            }
+            UI.display("New Balance   : " + SafeUI.moneyToString((long) response.payload[0].value));
         } else {
             String errorMsg = (response.payload.length > 0) ? (String) response.payload[0].value : "Unknown error";
             UI.printError(this.actionStr + " failed: " + errorMsg);

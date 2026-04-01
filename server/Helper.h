@@ -4,6 +4,9 @@
 
 #include <stdio.h>
 #include "server/Constant.h"
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -27,5 +30,16 @@
 #else
     #define pdebug(fmt, ...) do { } while (0)
 #endif
+
+
+static inline std::string hex_to_string(const char* data, size_t len) {
+    std::stringstream ss;
+    ss << "[HEX] ";
+    for (size_t i = 0; i < len; ++i) {
+        ss << std::hex << std::uppercase << std::setw(2) << std::setfill('0') 
+           << (static_cast<int>(data[i]) & 0xFF) << " ";
+    }
+    return ss.str();
+}
 
 #endif

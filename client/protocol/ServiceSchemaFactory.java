@@ -17,7 +17,9 @@ public class ServiceSchemaFactory {
                         Args.Type.CHAR,   // currency
                         Args.Type.INT64   // initial balance
                     },
-                    new Args.Type[]{} // account#
+                    new Args.Type[]{
+                        Args.Type.INT32,
+                    } // account#
                 );
 
             case Constants.SERVICE_CLOSE_ACCOUNT: 
@@ -64,7 +66,7 @@ public class ServiceSchemaFactory {
                         Args.Type.INT32,  // account#2
                         Args.Type.CHAR,   // currency2
                         Args.Type.FLOAT,  // exchange rate
-                        Args.Type.INT64   // recipient new balance
+                        Args.Type.INT64   // recipient remaining balance
                     }
                 );
 

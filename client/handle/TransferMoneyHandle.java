@@ -14,7 +14,7 @@ public class TransferMoneyHandle {
 
     // State variables
     private String name1, acc1, name2, acc2, passw1;
-    private char curr1, curr2;
+    private String curr1, curr2;
     private long amount;
 
     public TransferMoneyHandle(UDPClient udpClient) {
@@ -36,8 +36,8 @@ public class TransferMoneyHandle {
                 Args.ofInt32(Integer.parseInt(acc1)),
                 Args.ofString(name2),
                 Args.ofInt32(Integer.parseInt(acc2)),
-                Args.ofChar(curr1),
-                Args.ofChar(curr2),
+                Args.ofChar(SafeUI.currencyCodeToChar(curr1)),
+                Args.ofChar(SafeUI.currencyCodeToChar(curr2)),
                 Args.ofString(this.passw1),
                 Args.ofInt64(this.amount)
             };
@@ -53,6 +53,7 @@ public class TransferMoneyHandle {
             UI.printError("[TIMEOUT] Server is not responding.");
         } finally {
             this.CLEAN();
+            UI.drawSeparator();
             UI.prompt("Press Enter to return to menu...");
         }
     }
@@ -60,27 +61,31 @@ public class TransferMoneyHandle {
     private void INPUT_STATE() {
         UI.clearScreen();
         UI.drawBox("TRANSFER MONEY");
-        
+
         // Sender Info
-        String name1 = SafeUI.prompt("Name:", SafeUI::validateName);
-        String acc1 = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
-        String passw1 = SafeUI.prompt("Old Password:", SafeUI::validatePassword);
-        String curr1 = SafeUI.prompt("Currency (e.g., S, U, E):", SafeUI::validateCurrency);
+        String name1    = SafeUI.prompt("Sender Name:", SafeUI::validateName);
+        String acc1     = SafeUI.prompt("Sender Account Number:", SafeUI::validateAccountNumber);
+        String passw1   = SafeUI.prompt("Sender Password:", SafeUI::validatePassword);
+        String curr1    = SafeUI.prompt("Sender Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
+        
         this.name1 = name1;
         this.acc1  = acc1;
         this.passw1 = passw1;
-        this.curr1 = curr1.toUpperCase().charAt(0);
-        
+        this.curr1 = curr1.toUpperCase();
+
         UI.drawSeparator();
-        
+        UI.display("Receiver Information");
+        UI.drawSeparator();
+
         // Receiver Info
-        String name2 = SafeUI.prompt("Receiver Name:", SafeUI::validateName);
-        String acc2 = SafeUI.prompt("Receiver Account Number:", SafeUI::validateAccountNumber);
-        String curr2 = SafeUI.prompt("Receiver Currency (S/U/E):", SafeUI::validateCurrency);
+        String name2 = SafeUI.prompt("Name              :", SafeUI::validateName);
+        String acc2 = SafeUI.prompt("Account Number     :", SafeUI::validateAccountNumber);
+        String curr2 = SafeUI.prompt("Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
+        
         this.name2 = name2;
         this.acc2  = acc2;
-        this.curr2 = curr2.toUpperCase().charAt(0);
-        
+        this.curr2 = curr2.toUpperCase();
+
         UI.drawSeparator();
         String amountStr = SafeUI.prompt("Amount to Transfer:", SafeUI::validateMoneyInput);
         this.amount = SafeUI.validateMoneyInput(amountStr);
@@ -91,12 +96,13 @@ public class TransferMoneyHandle {
             UI.clearScreen();
             UI.drawBox("CONFIRM TRANSFER");
             UI.display("FROM: " + this.name1 + " (" + this.acc1 + ")");
-            UI.display("TO:   " + this.name2 + " (" + this.acc2 + ")");
-            UI.display("AMT:  " + String.format("%.2f", this.amount / 100.0) + " " + this.curr1 + " -> " + this.curr2);
+            UI.display("TO  : " + this.name2 + " (" + this.acc2 + ")");
+            UI.display("AMT : " + String.format("%.2f", this.amount / 100.0) + " " + 
+                    this.curr1 + " -> " + this.curr2);
             UI.drawSeparator();
             
-            String confirm = SafeUI.prompt("Create this account? (y/n)", SafeUI::validateYesNo);
-            switch (confirm.toLowerCase()) {
+            String confirm = SafeUI.prompt("Confirm transfer? (y/n)", SafeUI::validateYesNo);
+            switch (confirm.toLowerCase()) { 
                 case "y":
                     return 1;
                 case "n":
@@ -113,11 +119,18 @@ public class TransferMoneyHandle {
         
         if (response.isSuccess()) {
             UI.printSuccess("Transfer Successful!");
+            
             // Doc Output: [string, int32, int64, string] -> (name2, acc2, amount, msg)
             if (response.payload.length >= 4) {
-                UI.display("Recipient: " + response.payload[0].value);
-                UI.display("Final Amount: " + response.payload[2].value);
-                UI.display("Message: " + response.payload[3].value);
+                float amountTransferredFloat = (long) amount * (float) response.payload[3].value;
+                long amountTransferred = Math.round(amountTransferredFloat);
+
+                UI.display("Recipient        : " + response.payload[0].value);
+                UI.display("Recipient Acc#   : " + response.payload[1].value);
+                UI.display("Exchange Rate    : " + String.format("%.2f", (response.payload[3].value)));
+                UI.display("Amount Transferred: " + SafeUI.moneyToString(amountTransferred));
+                UI.display("Remaining Balance: " + curr1 + SafeUI.moneyToString((long) response.payload[4].value)
+                );
             }
         } else {
             String error = (response.payload.length > 0) ? (String) response.payload[0].value : "Unknown error";

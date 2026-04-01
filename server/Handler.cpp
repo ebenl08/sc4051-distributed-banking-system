@@ -1,4 +1,5 @@
 #include "Handler.h"
+#include "server/Helper.h"
 
 #define argvec std::vector<Argument>
 
@@ -9,7 +10,7 @@ void Handler::notify_monitor_clients(const std::string& msg) {
 }
 
 Response Handler::handle_service(Request request, const sockaddr_in& clientAddr) {
-    int32_t statusCode = SUCCESS;
+    int32_t statusCode = -1;
     argvec responseArgs;
 
     switch(request.serviceID) {
@@ -31,7 +32,7 @@ Response Handler::handle_service(Request request, const sockaddr_in& clientAddr)
             statusCode = INVALID_SERVICE_ID;
     }
     
-    Response res;
+    Response res = Response();
     res.reqID = 0; 
     res.statusCode = statusCode;
     res.args = std::move(responseArgs);
@@ -43,10 +44,11 @@ argvec Handler::open_account(const argvec& args, int32_t& statusCode) {
     argvec response;
     string username = args[0].value.stringValue;
     string password = args[1].value.stringValue;
-    char currency = args[2].value.stringValue[0];
+    char currency = args[2].value.charValue;
     int64_t initialBalance = args[3].value.int64Value;
     int64_t newBalance = args[3].value.int64Value; // Reusing initialBalance to store new balance after deposit
 
+    pdebug("Creating accounts...");
     int32_t accountNumber;
     statusCode = accountManager.addAccount(username, password, currency, accountNumber);
 
@@ -54,11 +56,11 @@ argvec Handler::open_account(const argvec& args, int32_t& statusCode) {
         response.push_back(Argument("Account creation failed!"));
         return response;
     } if (initialBalance > 0) {
-        
         accountManager.depositWithdraw(username, accountNumber, password, currency, initialBalance, newBalance); // Reusing accountNumber to store new balance
     }
 
     response.push_back(Argument(accountNumber));
+    pdebug("Account created successfully with account number: %d", accountNumber);
     notify_monitor_clients("Account created: " + to_string(accountNumber));
     return response;
 }
@@ -91,7 +93,7 @@ argvec Handler::deposit_withdraw(const argvec& args, int32_t& statusCode) {
     string password = args[2].value.stringValue;
     char currency = args[3].value.charValue;
     int64_t amount = args[4].value.int64Value;
-    int64_t newBalance;
+    int64_t newBalance = 0;
 
     statusCode = accountManager.depositWithdraw(username, accountNumber, password, currency, amount, newBalance);
 
@@ -100,15 +102,13 @@ argvec Handler::deposit_withdraw(const argvec& args, int32_t& statusCode) {
     } else if (statusCode == INSUFFICIENT_FUNDS) {
         response.push_back(Argument("Insufficient balance!"));
     } else if (statusCode == SUCCESS) {
-
-        string msg = (amount < 0) ? "Withdrawal successful" : "Deposit successful";
-        response.push_back(Argument(msg));
+        pdebug("NEW BALANCE: %lld", newBalance);
         response.push_back(Argument(newBalance));
-        
         string log = "Account " + to_string(accountNumber) + (amount < 0 ? " withdrew: " : " deposited: ") + to_string(abs(amount));
         notify_monitor_clients(log);
+    } else {
+        response.push_back(Argument("Transaction failed!"));
     }
-
     return response;
 }
 
@@ -135,8 +135,11 @@ argvec Handler::transfer(const argvec& args, int32_t& statusCode) {
         );
     
     if (statusCode == SUCCESS) {
-        response.push_back(Argument("Transfer to " + recipientUser + " successful"));
-        response.push_back(Argument(amount));
+        response.push_back(Argument(recipientUser));
+        response.push_back(Argument(recipientAcc));
+        response.push_back(Argument(recipientCurr));
+        response.push_back(Argument(exchangeRate));
+        response.push_back(Argument((int64_t) remainingBalance));
     } else {
         response.push_back(Argument("Transfer failed"));
     }
@@ -155,6 +158,9 @@ argvec Handler::view_account(const argvec& args, int32_t& statusCode) {
     statusCode = accountManager.viewAccount(username, accountNumber, password, currency, balance);
 
     if (statusCode == SUCCESS) {
+        response.push_back(Argument(accountNumber));
+        response.push_back(Argument(username));
+        response.push_back(Argument(currency));
         response.push_back(Argument(balance));
     } else {
         response.push_back(Argument("Could not retrieve balance."));
@@ -169,7 +175,7 @@ argvec Handler::register_monitor_client(const argvec& args, const sockaddr_in& c
 
     if (interval <= 0 || interval > MAX_MONITOR_INTERVAL) {
         statusCode = -1;
-        response.push_back(Argument("ERROR: Invalid monitor interval"));
+        response.push_back(Argument("Invalid monitor interval"));
         return response;
     }
     monitorManager.registerClient(clientAddr, interval);

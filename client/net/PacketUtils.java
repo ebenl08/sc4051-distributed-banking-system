@@ -8,12 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import client.Constants;
+import client.Utils;
 import client.protocol.Args;
 import client.protocol.Request;
 import client.protocol.Response;
+import java.nio.charset.StandardCharsets;
+
 
 
 public class PacketUtils {
+
+    static boolean debug = true;
     
     public static byte[] buildRequestMessage(Request request) {
         List<byte[]> message = new ArrayList<>();
@@ -46,16 +51,37 @@ public class PacketUtils {
 
     public static  Response parseResponseMessage(byte[] buffer, ServiceSchema serviceSchema) {
         int offset = 0;
-        int requestId = Marshalling.unmarshalInt32(buffer, offset);
+        int requestId = Marshalling.unmarshalInt32(buffer, offset); 
+        
         offset += Constants.INT_SIZE;
+
+        if(debug) {
+            System.out.println("Raw bytes of string argument: " + Utils.bytesToHex(buffer));
+            System.out.println("Parsed response ID: " + requestId);
+            System.out.println("Offset after reading request ID: " + offset);
+        }
+
         char statusCode = Marshalling.unmarshalChar(buffer, offset);
+        System.out.println("Parsing char at offset " + offset + ": " + Utils.bytesToHex(new byte[]{buffer[offset]}));
         offset += Constants.CHAR_SIZE;
+        
+        if(debug) {
+            System.out.println("Parsed status code: " + statusCode);
+        }
         
         Args[] args;
         if (statusCode == StatusCode.SUCCESS) {
             args = parsePayload(buffer, offset, serviceSchema.outputSchema);
         } else {
             args = parsePayload(buffer, offset, serviceSchema.errorSchema);
+        }
+
+        if(debug) {
+            System.out.println("Number of arguments parsed: " + args.length);
+            System.out.println("Parsed arguments:");
+            for (Args arg : args) {
+                System.out.println("  " + arg);
+            }
         }
         return new Response(requestId, statusCode, args);
     }
@@ -64,17 +90,19 @@ public class PacketUtils {
     private static Args[] parsePayload(byte[] buffer, int offset, Args.Type[] schema){ 
         
         List<Args> args = new ArrayList<>();
+        
         for (Args.Type type : schema) {
             // For simplicity, we assume the first byte of each argument indicates its type
             if(offset >= buffer.length){
                 break;
             }
+            System.out.println("Parsing argument of type " + type + " at offset " + offset);
 
             switch (type) {
                 case Args.Type.STRING:
                     int length = Marshalling.unmarshalInt32(buffer, offset);
                     offset += Constants.INT_SIZE; // Move past the length field
-                    String strValue = new String(buffer, offset, length);
+                    String strValue = new String(buffer, offset, length, StandardCharsets.UTF_8);
                     offset += length; // Move past the string data
                     args.add(Args.ofString(strValue));
                     break;

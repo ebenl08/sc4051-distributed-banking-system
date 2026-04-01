@@ -110,24 +110,30 @@ public class SafeUI {
 
     public static String moneyToString(long amountInCents) {
         BigDecimal amount = new BigDecimal(amountInCents).divide(new BigDecimal("100"));
-            return amount.setScale(2, java.math.RoundingMode.HALF_UP).toString();
+        return amount.setScale(2, java.math.RoundingMode.HALF_UP).toString();
     }
     
     
-    public static char validateCurrency(String input) throws IllegalArgumentException {
-        if (input.length() != 1 || !Character.isLetter(input.charAt(0))) {
-            throw new IllegalArgumentException("Currency must be a single letter.");
+    public static void validateCurrency(String input) throws IllegalArgumentException {
+        if (input.length() != 3 || !Character.isLetter(input.charAt(0))) {
+            throw new IllegalArgumentException("Currency must be a three-letter code.");
         }
-        String cleaned = input.trim().toUpperCase();
-        switch (cleaned) {
-            case "S":
+        if (!input.equalsIgnoreCase("SGD") && !input.equalsIgnoreCase("USD") && !input.equalsIgnoreCase("EUR")) {
+            throw new IllegalArgumentException("Unsupported currency. Please enter SGD, USD, or EUR.");
+        }
+    }
+    
+    
+    public static char currencyCodeToChar(String currency) {
+        switch (currency.toUpperCase()) {
+            case "SGD":
                 return Constants.SGD;
-            case "E":
-                return Constants.EUR;
-            case "U":
+            case "USD":
                 return Constants.USD;
+            case "EUR":
+                return Constants.EUR;
             default:
-                throw new IllegalArgumentException("Unsupported Currency");
+                throw new IllegalArgumentException("Unsupported currency. Please enter SGD, USD, or EUR.");
         }
     }
 

@@ -46,6 +46,7 @@ public class MonitorHandle {
             UI.printError("[TIMEOUT] Server did not respond.");
         } finally {
             this.CLEAN();
+            UI.drawSeparator();
             UI.prompt("Press Enter to return to menu...");
         }
     }
@@ -58,7 +59,7 @@ public class MonitorHandle {
         UI.display("Max Interval: 1800 seconds (30 minutes)");
         UI.drawSeparator();
         
-        this.interval = Integer.parseInt(UI.prompt("Monitor interval:"));
+        this.interval = Integer.parseInt(UI.prompt("Monitor Interval    :"));
         
     }
 
@@ -68,7 +69,7 @@ public class MonitorHandle {
             UI.drawBox("CONFIRM MONITOR SERVER REQUEST");
             UI.display("Interval:    " + this.interval);
             UI.drawSeparator();
-            String confirm = UI.prompt("Are you sure you want to PERMANENTLY close this account? (y/n)");
+            String confirm = UI.prompt("Confirm Monitor? (y/n)");
 
             switch (confirm.toLowerCase()) {
                 case "y":
@@ -96,9 +97,6 @@ public class MonitorHandle {
     }
     
     private void LIVE_MONITORING_STATE() throws IOException {
-
-        
-
         UI.clearScreen();
         UI.drawBox("LIVE MONITORING");
         UI.display("Connected to server for live updates. \nPress Ctrl+C to exit.");
@@ -109,38 +107,39 @@ public class MonitorHandle {
             this.monitoringActive = true;
             this.client.monitorServer(this::ON_UPDATE_CALLBACK);
             Thread.sleep(1000); 
-            
         } catch (InterruptedException e) {
-            UI.printWarning("Monitoring interrupted by user.");
+            UI.printWarning("Monitoring session ended.");
             Thread.currentThread().interrupt();
         } finally {
             this.monitoringActive = false;
         }
     }
 
-    public void ON_UPDATE_CALLBACK(Request callbackRequest){
-        int requestId = callbackRequest.requestId;
-        if (requestId == Constants.SERVICE_MONITOR_LIVE) {
+    public void ON_UPDATE_CALLBACK(Request callbackRequest) {
+        int serviceId = callbackRequest.serviceId;
+        if (serviceId == Constants.SERVICE_MONITOR_LIVE) {
             String message = (String) callbackRequest.payload[0].value;
             UI.display(message);
         }
-        else if (requestId == Constants.SERVICE_MONITOR_UPDATE) {
+        else if (serviceId == Constants.SERVICE_MONITOR_END) {
             String message = (String) callbackRequest.payload[0].value;
             UI.printWarning(message);
+            this.client.setMonitorMode(false); // toggle off monitor mode to end session
         }
         else{
-            UI.printError("Unexpected request ID received.");
+            UI.printError("Unexpected request ID received. Request ID: " + serviceId);
         }
     }
 
     private void MONITOR_END(){
         UI.drawSeparator();
-        UI.printSuccess("Monitor Session Ended!");
+        UI.printWarning("Monitor session has ended!");
     }
 
     private void CLEAN() {
         this.interval = null;
         this.monitoringActive = false;
+        this.client.setMonitorMode(false);
     }
 
 

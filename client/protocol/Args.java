@@ -34,6 +34,15 @@ public class Args {
     public static Args ofChar(char value) {
         return new Args(Type.CHAR, value);
     }
+
+    public String toString() {
+        return "Args{" +
+                "type=" + type +
+                ", value=" + value +
+                '}';
+
+                
+    }
     
 }
 

@@ -51,7 +51,7 @@ class Marshalling{
     static int64_t unmarshalInt64(char* buffer);
     static float unmarshalFloat(char* buffer);
     static char unmarshalChar(char* buffer);
-    static char* unmarshalString(char* buffer);
+    static std::string unmarshalString(char* buffer);
 
   private:
 };

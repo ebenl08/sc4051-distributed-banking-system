@@ -17,6 +17,8 @@ UDPServer::UDPServer(serverConfig config) :
     maxRetry(config.maxRetry), 
     handler(config.handler)
 {
+    latest_request_map.reserve(1024); // Reserve space for 1000 clients to reduce rehashing
+    request_client_map.reserve(1024); // Reserve space for 1000 requests to reduce rehashing
 }
 
 
@@ -46,38 +48,39 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
 
     int n = socket.receive(buffer, clientaddr);
     
-    pdebug("[Client %s port %d] Packet received\n", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+    pdebug("RECV FROM [CLIENT %s:%d]", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
     
     // parse request packet
+    pdebug("%s", hex_to_string(buffer, n).c_str());
+
     Request request = PacketBuilder::parseRequestPacket(buffer, counter);
-    pdebug("Parsed request: %s\n", request.toString().c_str());
+    pdebug("PARSE REQ: %s", request.toString().c_str());
 
     // initialize response packet
-    Response response_pkt;
+    Response response_pkt = Response();
 
     if(semanticInvoc == AT_MOST_ONE_SEM_INVO 
-        && (isOutdatedRequest(clientaddr, request.reqID)
-         || isDuplicateRequest(clientaddr, request.reqID)
-        )
+        && isDuplicateRequest(clientaddr, request.reqID)
     ){
         // use cached response
-        pdebug("Duplicate or outdated request detected. Retrieving cached response.\n");
+        pdebug("DUPLICATE REQUEST FOR ID %d", request.reqID);
         MapKey mapKey = generateMapKey(clientaddr, request.reqID);
         response_pkt = request_client_map[mapKey];
     }
     else{
         // process request and generate response
-        pdebug("Processing request with service ID %d\n", request.serviceID);
+        pdebug("PROCESSING SERVICE ID %d", request.serviceID);
         response_pkt = this->handler.handle_service(request, clientaddr);
 
         // cache response for at-most-one semantic invocation
-        pdebug("Caching response for request ID %d\n", request.reqID);
+        pdebug("CACHING RESPONSE FOR REQUEST ID %d", request.reqID);
         if(semanticInvoc == AT_MOST_ONE_SEM_INVO) {
             uint64_t networkKey = generateNetworkKey(clientaddr);
             latest_request_map[networkKey] = request.reqID;
             MapKey mapKey = generateMapKey(clientaddr, request.reqID);
             request_client_map[mapKey] = response_pkt;
         }
+
     }
 
     response_pkt.reqID = request.reqID; // Ensure response has the same reqID as the request
@@ -86,9 +89,12 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
     int32_t responseLength = PacketBuilder::buildResponsePacket(response, response_pkt);
     response_pkt.payloadLength = responseLength; // Update payload length in the response packet (for internal use)
 
-    pdebug("Response packet built with length %d bytes\n", responseLength);
-    pdebug("Sending response to client %s port %d\n", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
-    pdebug("Response: %s\n", response_pkt.toString().c_str());
+    std::stringstream debug_ss;
+    debug_ss << "Response packet built with length " << responseLength << " bytes\n";
+    debug_ss << "Sending response to client " << inet_ntoa(clientaddr.sin_addr) << " port " << ntohs(clientaddr.sin_port) << "\n";
+    debug_ss << response_pkt.toString() << "\n";
+    debug_ss << hex_to_string(response, responseLength);
+    pdebug("%s", debug_ss.str().c_str());
     return response_pkt.payloadLength;
 }
 
@@ -107,12 +113,14 @@ MapKey UDPServer::generateMapKey(const sockaddr_in& clientaddr, int32_t requestI
 bool UDPServer::isDuplicateRequest(const sockaddr_in& clientaddr, int32_t reqID) {
     MapKey mapKey = generateMapKey(clientaddr, reqID);
     auto it = request_client_map.find(mapKey);
+    pdebug("Duplicate? %d", it != request_client_map.end() && it->second.reqID == reqID);
     return it != request_client_map.end() && it->second.reqID == reqID;
 }
 
 bool UDPServer::isOutdatedRequest(const sockaddr_in& clientaddr, int32_t reqID) {
     uint64_t networkKey = generateNetworkKey(clientaddr);
     auto it = latest_request_map.find(networkKey);
+    pdebug("Outdated? %d", it != latest_request_map.end() && it->second < reqID);
     return it != latest_request_map.end() && it->second < reqID;
 }
 

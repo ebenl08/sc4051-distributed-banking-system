@@ -46,6 +46,8 @@ public class ViewAccountHandle {
             UI.printError("[TIMEOUT] Server is not responding.");
         } finally {
             this.CLEAN();
+            UI.drawSeparator();
+            UI.prompt("Press Enter to return to menu...");
         }
     }
 
@@ -53,9 +55,9 @@ public class ViewAccountHandle {
         UI.clearScreen();
         UI.drawBox("VIEW ACCOUNT");
 
-        String name = SafeUI.prompt("Name:", SafeUI::validateName);
-        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
-        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
+        String name = SafeUI.prompt(   "Name            :", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number  :", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password       :", SafeUI::validatePassword);
         
         this.name = name;
         this.accountId = account;
@@ -66,8 +68,8 @@ public class ViewAccountHandle {
         while (true) {
             UI.clearScreen();
             UI.drawBox("CONFIRM VIEW REQUEST");
-            UI.display("Name:       " + this.name);
-            UI.display("Account #:  " + this.accountId);
+            UI.display("Name            : " + this.name);
+            UI.display("Account Number  : " + this.accountId);
             UI.drawSeparator();
             
             String confirm = UI.prompt("Request balance information? (y/n)");
@@ -90,21 +92,25 @@ public class ViewAccountHandle {
         
         if (response.isSuccess()) {
             // Expected return from server: [int64] (balance)
-            long balance = (long) response.payload[0].value;
+            int accountNumber = (int) response.payload[0].value; // account#
+            String name = (String) response.payload[1].value; // name
+            char currency = (char) response.payload[2].value;
+            long balance = (long) response.payload[3].value;
+
+            String currencyStr = SafeUI.currencyCodeToString(currency);
+            String balanceStr = SafeUI.moneyToString(balance);
             
             UI.printSuccess("Data retrieved successfully.");
             UI.drawSeparator();
-            UI.display("Name: " + this.name);
-            UI.display("Account: " + this.accountId);
-            UI.display("Current Balance: " + balance);
+            UI.display("Name            : " + name);
+            UI.display("Account Number  : " + accountNumber);
+            UI.display("Current Balance : " + currencyStr + balanceStr);
             UI.drawSeparator();
 
         } else {
             String errorMsg = (response.payload.length > 0) ? (String) response.payload[0].value : "Authentication failed";
             UI.printError("Failed to view account: " + errorMsg);
         }
-        
-        UI.prompt("Press Enter to return to main menu...");
     }
 
     private void CLEAN() {

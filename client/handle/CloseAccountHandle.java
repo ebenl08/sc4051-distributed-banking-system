@@ -46,6 +46,7 @@ public class CloseAccountHandle {
             UI.printError("[TIMEOUT] Server did not respond.");
         } finally {
             this.CLEAN();
+            UI.drawSeparator();
             UI.prompt("Press Enter to return to menu...");
         }
     }
@@ -54,9 +55,9 @@ public class CloseAccountHandle {
         UI.clearScreen();
         UI.drawBox("CLOSE ACCOUNT");
 
-        String name = SafeUI.prompt("Name:", SafeUI::validateName);
-        String account = SafeUI.prompt("Account Number:", SafeUI::validateAccountNumber);
-        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
+        String name = SafeUI.prompt("Name            :", SafeUI::validateName);
+        String account = SafeUI.prompt("Account Number  :", SafeUI::validateAccountNumber);
+        String password = SafeUI.prompt("Password       :", SafeUI::validatePassword);
 
         this.name = name;
         this.account = account;
@@ -67,8 +68,8 @@ public class CloseAccountHandle {
         while (true) {
             UI.clearScreen();
             UI.drawBox("CONFIRM CLOSE ACCOUNT");
-            UI.display("Name:    " + this.name);
-            UI.display("Account: " + this.account);
+            UI.display("Name        :    " + this.name);
+            UI.display("Account     : " + this.account);
             UI.drawSeparator();
             String confirm = UI.prompt("Close this account PERMANENTLY? (y/n)");
 

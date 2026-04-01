@@ -3,41 +3,55 @@
 
 
 void Marshalling::marshal(char* buffer, int32_t value){
-  // value = htonl(value);
-  char* ptr = buffer;
-  memset(buffer, 0, sizeof(int32_t));
-  *ptr |= value>>24; ++ptr;
-  *ptr |= value>>16; ++ptr;
-  *ptr |= value>>8; ++ptr;
-  *ptr |= value>>0; ++ptr;
+  uint32_t uValue = static_cast<uint32_t>(value);
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(buffer);
+
+  // Manually place bytes in Big-Endian order
+  ptr[0] = static_cast<unsigned char>((uValue >> 24) & 0xFF);
+  ptr[1] = static_cast<unsigned char>((uValue >> 16) & 0xFF);
+  ptr[2] = static_cast<unsigned char>((uValue >> 8)  & 0xFF);
+  ptr[3] = static_cast<unsigned char>(uValue & 0xFF);
 }
 
 void Marshalling::marshal(char* buffer, int64_t value){
-  // value = htonll(value);
-  char* ptr = buffer;
-  memset(buffer, 0, sizeof(int64_t));
-  *ptr |= value>>56; ++ptr;
-  *ptr |= value>>48; ++ptr;
-  *ptr |= value>>40; ++ptr;
-  *ptr |= value>>32; ++ptr;
-  *ptr |= value>>24; ++ptr;
-  *ptr |= value>>16; ++ptr;
-  *ptr |= value>>8; ++ptr;
-  *ptr |= value>>0; ++ptr;
+  uint64_t uValue = static_cast<uint64_t>(value);
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(buffer);
+
+  ptr[0] = static_cast<unsigned char>((uValue >> 56) & 0xFF);
+  ptr[1] = static_cast<unsigned char>((uValue >> 48) & 0xFF);
+  ptr[2] = static_cast<unsigned char>((uValue >> 40) & 0xFF);
+  ptr[3] = static_cast<unsigned char>((uValue >> 32) & 0xFF);
+  ptr[4] = static_cast<unsigned char>((uValue >> 24) & 0xFF);
+  ptr[5] = static_cast<unsigned char>((uValue >> 16) & 0xFF);
+  ptr[6] = static_cast<unsigned char>((uValue >> 8)  & 0xFF);
+  ptr[7] = static_cast<unsigned char>(uValue & 0xFF);
 }
 
 void Marshalling::marshal(char* buffer, float value){
-  memcpy(buffer, &value, sizeof(value));
+
+  uint32_t bits;
+  // Copy the bit pattern of the float into an unsigned integer
+  static_assert(sizeof(float) == sizeof(uint32_t), "Float and Uint32 size mismatch");
+  
+  std::memcpy(&bits, &value, sizeof(value));
+
+  // Manually place bytes in Big-Endian order
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(buffer);
+  ptr[0] = static_cast<unsigned char>((bits >> 24) & 0xFF);
+  ptr[1] = static_cast<unsigned char>((bits >> 16) & 0xFF);
+  ptr[2] = static_cast<unsigned char>((bits >> 8)  & 0xFF);
+  ptr[3] = static_cast<unsigned char>(bits & 0xFF);
+
 }
 
 void Marshalling::marshal(char* buffer, const char* value){
   int32_t length = strlen(value);
-  memcpy(buffer, &length, sizeof(int32_t));
+  marshal(buffer, length); // First write the length of the string
   memcpy(buffer + 4, value, length);
 }
 
 void Marshalling::marshal(char* buffer, char value){
-  marshal(buffer, &value);
+  *buffer = (uint8_t) value;
 }
 
 int32_t Marshalling::unmarshalInt32(char* buffer){
@@ -59,11 +73,13 @@ int64_t Marshalling::unmarshalInt64(char* buffer){
 }
 
 float Marshalling::unmarshalFloat(char* buffer){
+  unsigned char* tmp = reinterpret_cast<unsigned char*>(buffer);
+  uint32_t bits = (static_cast<uint32_t>(tmp[0]) << 24) |
+                  (static_cast<uint32_t>(tmp[1]) << 16) |
+                  (static_cast<uint32_t>(tmp[2]) << 8)  |
+                  (static_cast<uint32_t>(tmp[3]));
   float value;
-
-  // Big endian (Network) to Little endian (host)
-  // char tmpbuffer[4] = { buffer[3], buffer[2], buffer[1], buffer[0]};
-  memcpy(&value, buffer, sizeof(value));
+  std::memcpy(&value, &bits, sizeof(value));
   return value;
 }
 
@@ -71,15 +87,12 @@ char Marshalling::unmarshalChar(char* buffer){
   return buffer[0];
 }
 
-char* Marshalling::unmarshalString(char* buffer){
+std::string Marshalling::unmarshalString(char* buffer){
   char* ptr = buffer;
   int32_t length = Marshalling::unmarshalInt32(ptr);
   ptr += 4;
 
-  char* value = new char[length + 1];
-  memcpy(value, ptr, length);
-  value[length] = '\0';
-
+  std::string value(ptr, length);
   return value;
 }
 

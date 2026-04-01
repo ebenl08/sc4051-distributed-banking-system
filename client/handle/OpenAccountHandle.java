@@ -15,7 +15,7 @@ public class OpenAccountHandle {
     // State variables
     private String name;
     private String password;
-    private char currency;
+    private String currency;
     private long initialBalance;
 
     public OpenAccountHandle(UDPClient udpClient) {
@@ -34,7 +34,7 @@ public class OpenAccountHandle {
             Args[] payload = new Args[]{
                 Args.ofString(this.name),
                 Args.ofString(this.password),
-                Args.ofChar(this.currency),
+                Args.ofChar(SafeUI.currencyCodeToChar(this.currency)),
                 Args.ofInt64(this.initialBalance)
             };
 
@@ -46,6 +46,7 @@ public class OpenAccountHandle {
             UI.printError("[TIMEOUT] Server is unavailable.");
         } finally {
             this.CLEAN();
+            UI.drawSeparator();
             UI.prompt("Press Enter to return to menu...");
         }
     }
@@ -54,14 +55,14 @@ public class OpenAccountHandle {
         UI.clearScreen();
         UI.drawBox("OPEN NEW ACCOUNT");
         
-        String name = SafeUI.prompt("Name:", SafeUI::validateName);
-        String password = SafeUI.prompt("Password:", SafeUI::validatePassword);
-        String currency = SafeUI.prompt("Currency (e.g., S, U, E):", SafeUI::validateCurrency);
-        String balance = SafeUI.prompt("Initial Balance:", SafeUI::validateMoneyInput);
+        String name = SafeUI.prompt("Name            :", SafeUI::validateName);
+        String password = SafeUI.prompt("Password        :", SafeUI::validatePassword);
+        String currency = SafeUI.prompt("Currency (SGD/USD/EUR):", SafeUI::validateCurrency);
+        String balance = SafeUI.prompt("Initial Balance :", SafeUI::validateMoneyInput);
 
         this.name = name;
         this.password = password;
-        this.currency = currency.toUpperCase().charAt(0);
+        this.currency = currency.toUpperCase();
         this.initialBalance = SafeUI.validateMoneyInput(balance);
     }
 
@@ -69,9 +70,9 @@ public class OpenAccountHandle {
         while (true) {
             UI.clearScreen();
             UI.drawBox("CONFIRM DETAILS");
-            UI.display("Name:     " + this.name);
-            UI.display("Currency: " + this.currency);
-            UI.display("Balance:  " + String.format("%.2f", this.initialBalance / 100.0));
+            UI.display("Name        : " + this.name);
+            UI.display("Currency    : " + this.currency);
+            UI.display("Balance     : " + String.format("%.2f", this.initialBalance / 100.0));
             UI.drawSeparator();
             
             String confirm = SafeUI.prompt("Create this account? (y/n)", SafeUI::validateYesNo);
@@ -92,9 +93,13 @@ public class OpenAccountHandle {
         
         if (response.isSuccess()) {
             // Per your doc, this returns [string] (the new account number)
-            String accountNum = (String) response.payload[0].value;
+            int accountNum = (int) response.payload[0].value;
             UI.printSuccess("Account created successfully!");
+            UI.drawSeparator();
             UI.display("Your Account Number is: " + accountNum);
+            UI.display("Please keep it safe for future transactions.");
+            UI.drawSeparator();
+
         } else {
             String errorMsg = (String) response.payload[0].value;
             UI.printError("Failed to open account: " + errorMsg);
@@ -107,7 +112,7 @@ public class OpenAccountHandle {
     private void CLEAN() {
         this.name = null;
         this.password = null;
-        this.currency = ' ';
+        this.currency = null;
         this.initialBalance = 0;
     }
 }

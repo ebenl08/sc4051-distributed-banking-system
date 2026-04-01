@@ -11,6 +11,7 @@
 
 #include "server/net/Socket.h"
 #include "server/net/Marshalling.h"
+#include "server/protocol/Packet.h"
 
 class MonitorManager {
 public:
@@ -25,6 +26,7 @@ public:
 
     void registerClient(const sockaddr_in& clientAddr, int32_t intervalSeconds);
     void removeExpiredClients();
+    void printExpiredClientsDebug(const std::vector<MonitorClient>& expiredClients, const Request& request);
 
     void notifyAll(const std::string& message);
 
