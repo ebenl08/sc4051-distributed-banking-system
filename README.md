@@ -1,8 +1,4 @@
-Based on your file structure, it looks like you're building a distributed banking system (Zeus Banking) with a **Java Client** and a **C++ Server**. This is a classic setup for practicing socket programming, cross-language data marshalling, and multi-threaded request handling.
-
-Here are two distinct READMEs tailored to the specific components shown in your explorer.
-
----
+# SC4051 PROJECT AY2025/26 SEM 2 - ZEUS DISTRIBUTED BANKING SYSTEM
 
 # Zeus Banking - Java Client
 
