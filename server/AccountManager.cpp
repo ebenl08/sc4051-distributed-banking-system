@@ -38,7 +38,7 @@ Account& AccountManager::getAccount(std::string username, int32_t accountNumber)
 
 int32_t AccountManager::addAccount(string username, string password, char currency, int32_t& accountN){
     try {
-        
+
         for (const Account& account : this->accountStore) {
             if (account.getUsername() == username && account.getCurrency() == currency) {
                 return ACCOUNT_ALREADY_EXISTS;
@@ -79,9 +79,14 @@ int32_t AccountManager::closeAccount(string username, int32_t accountNumber, str
 int32_t AccountManager::depositWithdraw(string username, int32_t accountNumber, string password, char currency, int64_t amount, int64_t& newBalance){
     try {
         Account& account = this->getAccount(username, accountNumber);
-        newBalance = account.getBalance() + amount;
+        int64_t finalAmount; float exchangeRate;
+        exchangeCurrency(currency, account.getCurrency(), amount, finalAmount, exchangeRate);
+
+        newBalance = account.getBalance() + finalAmount;
+
         if(newBalance < 0) return INSUFFICIENT_FUNDS;
         account.updateBalance(newBalance);
+        
         return SUCCESS;
     } catch (int err) {
         return INTERNAL_ERROR;
