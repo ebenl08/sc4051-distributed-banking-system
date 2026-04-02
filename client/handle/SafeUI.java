@@ -82,6 +82,10 @@ public class SafeUI {
             if (amount.compareTo(BigDecimal.ZERO) < 0) {
                 throw new IllegalArgumentException("Amount cannot be negative.");
             }
+            BigDecimal cents = amount.multiply(BigDecimal.valueOf(100));
+            if (cents.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) > 0) {
+                throw new IllegalArgumentException("Amount too large.");
+            }
             return parseMoneyNumber(input);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid Money Format");
