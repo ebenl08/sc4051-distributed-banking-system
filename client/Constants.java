@@ -11,14 +11,14 @@ public final class Constants {
     public static final int DEFAULT_MAX_RETRY = 3;
 
     //connection
-    public static final int ACK = 1;
-    public static final String ACK_CHAR = "1";
-    public static final int NAK = 0;
-    public static final String NAK_CHAR = "0";
-    public static final int RESPONSE_TYPE_SIZE = 1;
-    public static final String INVALID_RESPONSE = "server problem";
-    public static final String TIMEOUT_MSG = "timeout resending..(%d/%d)%n";
-    public static final String MAX_TIMEOUT_MSG = "TLE bro";
+    // public static final int ACK = 1;
+    // public static final String ACK_CHAR = "1";
+    // public static final int NAK = 0;
+    // public static final String NAK_CHAR = "0";
+    // public static final int RESPONSE_TYPE_SIZE = 1;
+    // public static final String INVALID_RESPONSE = "server problem";
+    // public static final String TIMEOUT_MSG = "timeout resending..(%d/%d)%n";
+    // public static final String MAX_TIMEOUT_MSG = "TLE bro";
 
     //semantic
     public static final int NO_SEM_INVO = 0;
