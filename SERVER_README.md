@@ -11,7 +11,17 @@ This server is part of the ZeusBanking distributed banking system. It handles ac
 
 ### Bash Script
 
-Simply run the following files to automatically run the server, to adjust its parameter please take a look at the [Configuration](#configuration) section of this file.
+Simply run the following files to automatically setup and run the server under default configuration:
+
+```
+Server Hostname		: localhost
+Server Port		: 8080
+Max Retry		: 3
+Error Rate Simulation	: 30%
+Invocation Semantic	: At Most Once
+```
+
+To adjust its parameter please take a look at the [Configuration](#configuration) section of this file.
 
 ```sh
 source script/setup-server.sh
@@ -42,8 +52,25 @@ g++ *.cpp net/*.cpp -o bin/app
 
 2. The server will start and listen for client requests.
 
-## Configuration
-- Default configuration is set in the `server/main.cpp` for now, so kindly edit the parameter inside that file on the Builder function of `UDPServer` to adjust their semantics, sockets or other server configuration.
+## Custom Configuration
+
+Run this after compiling (After running the `source script/setup-server.sh`)
+
+```
+Usage: ./server/bin/app [OPTIONS]
+
+Options:
+  -h, --host <name>      Server hostname/IP Address (default: localhost)
+  -p, --port <num>       Port number (1-65535)
+  -s, --semantic <type>  Invocation Semantic: (default: '1')
+                         '0' or 'at-least-once'
+                         '1' or 'at-most-once'
+  -r, --max-retry <num>  Max number of retries
+  -e, --error <num>      Simulated error/packet loss rate (0 - 100)
+  --help                 Display this help message
+```
+
+Example: `./server/bin/app --host localhost --port 8080 -s 1 -r 3 -e 50`
 
 ## Troubleshooting
 - Ensure all dependencies are installed.

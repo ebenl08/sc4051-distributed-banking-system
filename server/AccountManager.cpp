@@ -38,6 +38,13 @@ Account& AccountManager::getAccount(std::string username, int32_t accountNumber)
 
 int32_t AccountManager::addAccount(string username, string password, char currency, int32_t& accountN){
     try {
+        
+        for (const Account& account : this->accountStore) {
+            if (account.getUsername() == username && account.getCurrency() == currency) {
+                return ACCOUNT_ALREADY_EXISTS;
+            }
+        }
+        
         accountN = this->accountIdCounter++;
         Account* account = new Account(accountN, username, password, currency);
         this->accountStore.push_back(*account);

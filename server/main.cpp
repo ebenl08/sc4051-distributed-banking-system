@@ -8,6 +8,8 @@
 #include <string>
 #include <arpa/inet.h>
 
+#include<getopt.h>
+
 #include "server/net/UDPServer.h"
 #include "server/net/Marshalling.h"
 #include "server/net/Socket.h"
@@ -16,43 +18,99 @@
 
 using namespace std;
 
-struct CachedReply {
-    int32_t reqID;
-    string clientIP;
-    uint16_t clientPort;
-    char response[BUFFER_SIZE];
-    int length;
+struct Config {
+    int port;
+    const char* hostname;
+    int semanticInvoc;
+    int maxRetry;
+    int errRate;
+
+    std::string toString() const {
+        std::stringstream ss;
+        ss << "\n--------------------------------------------" << endl;
+        ss << "Server Configuration:" << endl;
+        ss << "---------------------------------------------" << endl;
+        ss << "  Hostname       : " << hostname << endl;
+        ss << "  Port           : " << port << endl;
+        ss << "  Max Retry      : " << maxRetry << endl;
+        ss << "  Simulated Error Rate: " << errRate << "%" << endl;
+        ss << "  Invocation Semantic: " << (semanticInvoc == AT_MOST_ONE_SEM_INVO ? 
+                                                "At-Most-Once" : "At-Least-Once") 
+                                        << endl;
+        return ss.str();
+    }
 };
 
-int findCachedReply(const vector<CachedReply>& cache, int32_t reqID, const sockaddr_in& clientaddr) {
-    string ip = inet_ntoa(clientaddr.sin_addr);
-    uint16_t port = ntohs(clientaddr.sin_port);
-
-    for(int i = 0; i < (int)cache.size(); i++){
-        if(cache[i].reqID == reqID &&
-            cache[i].clientIP == ip &&
-            cache[i].clientPort == port){
-            return i;
-        }
-    }
-    return -1;
+void print_usage(char* prog_name) {
+    printf("Usage: %s [OPTIONS]\n\n", prog_name);
+    printf("Options:\n");
+    printf("  -h, --host <name>      Server hostname (default: localhost)\n");
+    printf("  -p, --port <num>       Port number (1-65535)\n");
+    printf("  -t, --type <type>      Invocation Semantic: (default: '1')\n");
+    printf("                         '0' or 'at-least-once'\n");
+    printf("                         '1' or 'at-most-once'\n");
+    printf("  -r, --max-retry <num>  Max number of retries\n");
+    printf("  -e, --error <num>      Simulated error/packet loss rate (0 - 100)\n");
+    printf("  --help                 Display this help message\n");
 }
 
-int main(){
-    int port = 8080;
-    const char* hostname = "localhost";
+int parseArguments(int argc, char* argv[], Config& cfg) {
 
-    cout << "Starting server on " << hostname << ":" << port << endl;
+    cfg.port = DEFAULT_PORT;
+    cfg.hostname = DEFAULT_HOST;
+    cfg.semanticInvoc = AT_MOST_ONE_SEM_INVO;
+    cfg.maxRetry = DEFAULT_MAX_RETRY;
+    cfg.errRate = DEFAULT_FAILURE_RATE;
 
+    int opt;
+
+    static struct option long_options[] = {
+        {"host",  required_argument, 0, 'h'},
+        {"port",  required_argument, 0, 'p'},
+        {"semantic",  required_argument, 0, 's'},
+        {"max-retry", required_argument, 0, 'r'},
+        {"error", required_argument, 0, 'e'},
+        {"help", no_argument, 0, 'H'},
+        {0, 0, 0, 0}
+    };
+
+    while ((opt = getopt_long(argc, argv, "h:p:s:r:e:H", long_options, nullptr)) != -1) {
+        switch (opt) {
+            case 'h': cfg.hostname = optarg; break;
+            case 'p': cfg.port = std::stoi(optarg); break;
+            case 's': 
+                // Parse string to int code
+                if (std::string(optarg) == "at-most-once") cfg.semanticInvoc = AT_MOST_ONE_SEM_INVO;
+                else if (std::string(optarg) == "at-least-once") cfg.semanticInvoc = AT_LEAST_ONE_SEM_INVO;
+                else cfg.semanticInvoc = std::stoi(optarg); 
+                break;
+            case 'r': cfg.maxRetry = std::stoi(optarg); break;
+            case 'e': cfg.errRate = std::stoi(optarg); break;
+            case 'H': print_usage(argv[0]); return 0;
+            default: print_usage(argv[0]); return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+
+int main(int argc, char* argv[]){
+    Config cfg;
+    if (parseArguments(argc, argv, cfg) != 0) return 1;
+
+    cout << cfg.toString() << endl;
+
+    cout << "Starting server on " << cfg.hostname << ":" << cfg.port << "..." << endl;
     cout << "Initializing socket..." << endl;
-    Socket sock(port, hostname);
-
+    Socket sock(cfg.port, cfg.hostname);
     cout << "Initializing service handler and loading server configuration..." << endl;
-
     Handler handler(sock);
     serverConfig config = {
-        .semanticInvoc = AT_MOST_ONE_SEM_INVO,
-        .maxRetry = 3,
+        .semanticInvoc = cfg.semanticInvoc,
+        .maxRetry = cfg.maxRetry,
+        .errRate = cfg.errRate,
         .socket = sock,
         .handler = handler
     };

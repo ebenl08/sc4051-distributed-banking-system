@@ -15,7 +15,8 @@ UDPServer::UDPServer(serverConfig config) :
     socket(config.socket), 
     semanticInvoc(config.semanticInvoc), 
     maxRetry(config.maxRetry), 
-    handler(config.handler)
+    handler(config.handler),
+    errRate(config.errRate)
 {
     latest_request_map.reserve(1024); // Reserve space for 1000 clients to reduce rehashing
     request_client_map.reserve(1024); // Reserve space for 1000 requests to reduce rehashing
@@ -34,14 +35,19 @@ int32_t UDPServer::startServer(){
         int32_t responseLength = serveRequest(buffer, response, clientaddr);
         
         if(responseLength > 0) {
-            int32_t requestId = Marshalling::unmarshalInt32(buffer); // Extract reqID for logging
+            // extract reqID for logging and potential loss simulation
+            int32_t requestId = Marshalling::unmarshalInt32(buffer); 
 
-            // implement random packet loss for comparing the semantics behaviour
-            // 50% chance of packet loss
-            if (rand() % 100 < 50) pwarn("REQUEST PACKET LOSS FOR REQ ID %d", requestId);
-            else socket.send(response, responseLength, clientaddr);
+            // random loss simulation
+            if (rand() % 100 < this->errRate) 
+                pwarn("REQUEST PACKET LOSS FOR REQ ID %d", requestId);
+
+            // send response
+            else 
+                socket.send(response, responseLength, clientaddr);
         }
 
+        // clean buffers and client address for next request
         memset(buffer, 0, sizeof(buffer));
         memset(response, 0, sizeof(response));
         memset(&clientaddr, 0, sizeof(clientaddr));
@@ -78,6 +84,7 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
         // process request and generate response
         pinfo("PROCESSING SERVICE ID %d", request.serviceID);
         response_pkt = this->handler.handle_service(request, clientaddr);
+        response_pkt.reqID = request.reqID;
 
         // cache response for at-most-one semantic invocation
         pinfo("CACHING RESPONSE FOR REQUEST ID %d", request.reqID);
@@ -89,8 +96,6 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
         }
 
     }
-
-    response_pkt.reqID = request.reqID; // Ensure response has the same reqID as the request
 
     // build response packet
     int32_t responseLength = PacketBuilder::buildResponsePacket(response, response_pkt);
@@ -121,14 +126,14 @@ MapKey UDPServer::generateMapKey(const sockaddr_in& clientaddr, int32_t requestI
 bool UDPServer::isDuplicateRequest(const sockaddr_in& clientaddr, int32_t reqID) {
     MapKey mapKey = generateMapKey(clientaddr, reqID);
     auto it = request_client_map.find(mapKey);
-    pdebug("Duplicate? %d", it != request_client_map.end() && it->second.reqID == reqID);
+    pinfo("IS PACKET DUPLICATE? %d", it != request_client_map.end() && it->second.reqID == reqID);
     return it != request_client_map.end() && it->second.reqID == reqID;
 }
 
 bool UDPServer::isOutdatedRequest(const sockaddr_in& clientaddr, int32_t reqID) {
     uint64_t networkKey = generateNetworkKey(clientaddr);
     auto it = latest_request_map.find(networkKey);
-    pdebug("Outdated? %d", it != latest_request_map.end() && it->second < reqID);
+    pdebug("IS PACKET OUTDATED? %d", it != latest_request_map.end() && it->second < reqID);
     return it != latest_request_map.end() && it->second < reqID;
 }
 

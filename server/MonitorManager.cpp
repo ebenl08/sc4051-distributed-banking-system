@@ -93,7 +93,9 @@ void MonitorManager::notifyAll(const std::string& message) {
     removeExpiredClients();
 
     char packet[BUFFER_SIZE];
-    int32_t length = buildCallbackPacket(packet, message);
+    
+    string completeMessage = "[" + get_timestamp() + "] " + message;
+    int32_t length = buildCallbackPacket(packet, completeMessage);
 
     if(!clients.empty()){
         pinfo("NOTIFYING MONITOR CLIENTS");

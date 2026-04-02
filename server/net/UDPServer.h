@@ -26,6 +26,7 @@
 typedef struct {
     int32_t semanticInvoc;
     int32_t maxRetry;
+    int32_t errRate;
     Socket& socket;
     Handler& handler;
 } serverConfig;
@@ -61,6 +62,7 @@ class UDPServer{
     int32_t semanticInvoc = AT_LEAST_ONE_SEM_INVO;
     int32_t requestIdCounter = 0;
     int32_t maxRetry = 3;
+    int32_t errRate = 0;
     Socket& socket;
     
     std::unordered_map<MapKey, Response, MapKeyHasher> request_client_map = std::unordered_map<MapKey, Response, MapKeyHasher>(); // Map request ID to client address

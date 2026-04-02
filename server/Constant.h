@@ -14,7 +14,7 @@
 // Argument Constant
 #define DEFAULT_HOST "127.0.0.1"
 #define DEFAULT_PORT 8080
-#define DEFAULT_FAILURE_RATE 0.0
+#define DEFAULT_FAILURE_RATE 0
 #define DEFAULT_TIMEOUT 1000
 #define DEFAULT_NO_TIMEOUT 0
 #define DEFAULT_MAX_TIMEOUT 0
@@ -31,9 +31,8 @@
 // #define MAX_TIMEOUT_MSG "TLE bro"
 
 // semantic
-#define NO_SEM_INVO 0
-#define AT_LEAST_ONE_SEM_INVO 1
-#define AT_MOST_ONE_SEM_INVO 2
+#define AT_LEAST_ONE_SEM_INVO 0
+#define AT_MOST_ONE_SEM_INVO 1
 
 // type
 #define INT32_SIZE 4
@@ -62,5 +61,6 @@
 #define INVALID_AMOUNT 4
 #define INTERNAL_ERROR 5
 #define INVALID_SERVICE_ID 6
+#define ACCOUNT_ALREADY_EXISTS 7
 
 # endif

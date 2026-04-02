@@ -3,10 +3,14 @@
 #define SERVER_HELPER_H
 
 #include <stdio.h>
-#include "server/Constant.h"
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
+#include <ctime>
+
+#include "server/Constant.h"
+
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -14,7 +18,6 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-// Change to 0 to disable all debug prints for production
 
 #if DEBUG
     #define pdebug(fmt, ...) \
@@ -76,6 +79,19 @@ static inline std::string currencyToString(char currency) {
         case EUR: return "EUR";
         default: return "UNKNOWN";
     }
+}
+
+
+static inline std::string get_timestamp() {
+    std::time_t now = std::time(nullptr);
+    std::tm tm_buf;
+    
+    // Thread-safe version for POSIX (Linux/Mac)
+    localtime_r(&now, &tm_buf); 
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm_buf, "%Y-%m-%d %H:%M:%S");
+    return oss.str();
 }
 
 #endif

@@ -53,9 +53,17 @@ argvec Handler::open_account(const argvec& args, int32_t& statusCode) {
     statusCode = accountManager.addAccount(username, password, currency, accountNumber);
 
     if (statusCode != SUCCESS) {
-        response.push_back(Argument("Account creation failed!"));
+        if(statusCode == ACCOUNT_ALREADY_EXISTS){
+            pinfo("ACCOUNT ALREADY EXISTS");
+            response.push_back(Argument("Account with the same username and currency already exists!"));
+        } else {
+            pinfo("FAILED TO CREATE ACCOUNT");
+            response.push_back(Argument("Failed to create account!"));
+        }
         return response;
-    } if (initialBalance > 0) {
+    } 
+
+    if (initialBalance > 0) {
         accountManager.depositWithdraw(username, accountNumber, password, currency, initialBalance, newBalance); // Reusing accountNumber to store new balance
     }
 
@@ -115,7 +123,7 @@ argvec Handler::deposit_withdraw(const argvec& args, int32_t& statusCode) {
 
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(2) << (amount / 100.0f);
-        notify_monitor_clients("[BALANCE " + action + "] Amount: " + oss.str());
+        notify_monitor_clients("[BALANCE " + action + "] Account ID: " + to_string(accountNumber) + " | AMOUNT: " + oss.str());
     } else {
         response.push_back(Argument("TRANSACTION FAILED!"));
     }
