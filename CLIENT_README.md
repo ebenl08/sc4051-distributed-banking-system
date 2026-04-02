@@ -21,7 +21,7 @@ This command finds all `.java` files in the current directory and its subdirecto
 To execute a compiled class, use the following command from inside the `client/` directory. For example, to run the `DSBankingUI` class:
 
 ```sh
-java -cp bin <module-name>
+java -cp bin <module-name> --host <hostname> --port <port>
 ```
 
 Alternatively you could also run the `run-client.sh` to open the actual CLI application or the `run-test-client.sh` to automatically load different request packages across the different services so that you don't need to spend time adding input into your application.
