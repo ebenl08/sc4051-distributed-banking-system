@@ -19,7 +19,7 @@
 #define DEFAULT_NO_TIMEOUT 0
 #define DEFAULT_MAX_TIMEOUT 0
 #define DEFAULT_MAX_RETRY 3
-#define MAX_MONITOR_INTERVAL 3600 // 1 hour
+#define MAX_MONITOR_INTERVAL 1800 // 30 minutes
 
 // connection
 #define ACK 1

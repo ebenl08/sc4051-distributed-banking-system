@@ -117,6 +117,9 @@ argvec Handler::deposit_withdraw(const argvec& args, int32_t& statusCode) {
     } else if (statusCode == INSUFFICIENT_FUNDS) {
         pinfo("INSUFFICIENT BALANCE");
         response.push_back(Argument("Insufficient balance!"));
+    } else if (statusCode == INVALID_CREDENTIALS) {
+        pinfo("INVALID CREDENTIALS");
+        response.push_back(Argument("Invalid credentials! (Check password, currency, and account number)"));
     } else if (statusCode == SUCCESS) {
         pinfo("NEW BALANCE: %lld", newBalance);
         response.push_back(Argument(newBalance));

@@ -1,5 +1,6 @@
 
 # include "AccountManager.h"
+# include "server/Helper.h"
 
 // class AccountManager{
 //     public:
@@ -79,14 +80,13 @@ int32_t AccountManager::closeAccount(string username, int32_t accountNumber, str
 int32_t AccountManager::depositWithdraw(string username, int32_t accountNumber, string password, char currency, int64_t amount, int64_t& newBalance){
     try {
         Account& account = this->getAccount(username, accountNumber);
-        int64_t finalAmount; float exchangeRate;
-        exchangeCurrency(currency, account.getCurrency(), amount, finalAmount, exchangeRate);
 
-        newBalance = account.getBalance() + finalAmount;
-
+        if(account.getPassword() != password || account.getCurrency() != currency){
+            return INVALID_CREDENTIALS;
+        }
+        newBalance = account.getBalance() + amount;
         if(newBalance < 0) return INSUFFICIENT_FUNDS;
         account.updateBalance(newBalance);
-        
         return SUCCESS;
     } catch (int err) {
         return INTERNAL_ERROR;
@@ -99,10 +99,18 @@ int32_t AccountManager::transfer(string senderUsername, int32_t senderAccountNum
     exchangeRate = 1.0;
     try {
         Account& sender = this->getAccount(senderUsername, senderAccountNumber);
+
         if(sender.getBalance() < amount) return INSUFFICIENT_FUNDS;
-        if(validateAccount(sender, password) == 0){
+        
+        if(validateAccount(sender, password) == 0 
+            && sender.getCurrency() == senderCurrency){
+
             Account& receiver = this->getAccount(recipientUsername, recipientAccountNumber);
-            // not sure if this is the good practice but let's just do this for now
+            
+            if (receiver.getCurrency() != recipientCurrency) {
+                return INVALID_CREDENTIALS;
+            }
+
             sender.updateBalance(sender.getBalance() - amount);
             remaining_balance = sender.getBalance();
             int64_t exchangedAmount;

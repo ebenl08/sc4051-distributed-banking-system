@@ -35,7 +35,7 @@ public class DepositWithdrawHandle {
                 Args.ofString(name),
                 Args.ofInt32(Integer.parseInt(account)),
                 Args.ofString(password),
-                Args.ofChar(currency.charAt(0)),
+                Args.ofChar(SafeUI.currencyCodeToChar(currency)),
                 Args.ofInt64(amount)
             };
 

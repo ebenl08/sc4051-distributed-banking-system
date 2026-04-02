@@ -46,7 +46,7 @@ void MonitorManager::removeExpiredClients() {
 
     // notify clients about their expired sessions
     if (!expiredClients.empty()) {
-        pdebug ("MONITOR:Removing %zu expired monitor clients", expiredClients.size());
+        pwarn ("MONITOR: Removing %zu expired monitor clients", expiredClients.size());
         Request request;
         request.reqID = 0;
         request.serviceID = SERVICE_MONITOR_END;

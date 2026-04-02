@@ -62,10 +62,11 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
     int n = socket.receive(buffer, clientaddr);
 
     pinfo("\n\n");
-    pinfo("RECV FROM [CLIENT %s:%d]", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+    
     
     // parse request packet
     Request request = PacketBuilder::parseRequestPacket(buffer, counter);
+    pinfo("RECV FROM [CLIENT %s:%d]\n>>>>>>> REQUEST: %s ", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port), request.toString().c_str());
     pdebug("RAW REQ: %s", hex_to_string(buffer, n).c_str());
     pdebug("PARSE REQ: %s", request.toString().c_str());
 
@@ -107,6 +108,8 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
     debug_ss << response_pkt.toString() << "\n";
     debug_ss << hex_to_string(response, responseLength);
     pdebug("%s", debug_ss.str().c_str());
+
+    pinfo(">>>>>>> RESPONSE SENT TO [CLIENT %s:%d]\n%s", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port), response_pkt.toString().c_str());
 
     return response_pkt.payloadLength;
 }
