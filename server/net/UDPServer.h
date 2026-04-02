@@ -35,13 +35,15 @@ struct MapKey {
     int32_t reqID;
     uint64_t networkaddr;
     bool operator==(const MapKey& other) const {
-        return reqID == other.reqID && networkaddr == other.networkaddr;
+        return reqID == other.reqID && 
+            networkaddr == other.networkaddr;
     }
 };
 
 struct MapKeyHasher {
     std::size_t operator()(const MapKey& k) const {
-        return std::hash<int32_t>()(k.reqID) ^ (std::hash<uint64_t>()(k.networkaddr) << 1);
+        return std::hash<int32_t>()(k.reqID) ^ 
+            (std::hash<uint64_t>()(k.networkaddr) << 1);
     }
 };
 

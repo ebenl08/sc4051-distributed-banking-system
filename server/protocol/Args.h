@@ -10,6 +10,8 @@
 #include <iostream>
 #include <vector> 
 
+// Data type enum for argument marshalling/unmarshalling
+
 enum DataType {
     TYPE_STRING,
     TYPE_CHAR,
@@ -17,6 +19,8 @@ enum DataType {
     TYPE_INT64,
     TYPE_FLOAT
 };
+
+// Argument struct to hold different types of arguments in a type-safe manner
 
 struct Argument {
     DataType type;

@@ -2,19 +2,6 @@
 # include "AccountManager.h"
 # include "server/Helper.h"
 
-// class AccountManager{
-//     public:
-//         AccountManager();
-//         int addAccount(ccptr username, ccptr password, char currency);
-//         int closeAccount(ccptr username, ccptr password, char currency);
-//         int deposit(ccptr username, ccptr password, char currency, int64_t amount);
-//         int withdraw(ccptr username, ccptr password, char currency, int64_t amount);
-//         int transfer(ccptr username, ccptr password, char currency, int64_t amount, ccptr recipient);
-//     private:
-//         std::vector<Account> accountStore;
-//         Account getAccount(ccptr username);
-//         int64_t exchangeCurrency(ccptr fromCurrency, ccptr toCurrency, int64_t amount);
-// };
 
 using namespace std;
 
@@ -22,6 +9,7 @@ AccountManager::AccountManager(){
     this->accountStore = std::vector<Account>();
 }
 
+// retrieve account based on username and account number, throw exception if not found
 Account& AccountManager::getAccount(std::string username, int32_t accountNumber) {
     try {
         if (this->accountStore.empty()) {
@@ -36,6 +24,7 @@ Account& AccountManager::getAccount(std::string username, int32_t accountNumber)
         throw INTERNAL_ERROR;
     }
 }
+
 
 int32_t AccountManager::addAccount(string username, string password, char currency, int32_t& accountN){
     try {

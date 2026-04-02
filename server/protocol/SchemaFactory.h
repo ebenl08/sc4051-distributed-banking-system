@@ -13,6 +13,8 @@
 #include "server/Constant.h"
 #include "server/protocol/Args.h"
 
+// Service schema struct to define the expected input and output argument types for each service ID
+
 struct ServiceSchema {
     std::vector<DataType> inputTypes;
     std::vector<DataType> outputTypes;
@@ -20,6 +22,8 @@ struct ServiceSchema {
         TYPE_STRING // error message
     };
 };
+
+// build schema based on service ID for request parsing and response building
 
 class SchemaFactory {
     public:

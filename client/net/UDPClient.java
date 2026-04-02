@@ -125,6 +125,7 @@ public class UDPClient {
     }
 
 
+    // Iterate through schema and cross-check each argument type against the expected schema types
     public void validateRequestSchema(Args[] args, Args.Type[] expectedTypes) {
         if (args.length != expectedTypes.length) {
             throw new IllegalArgumentException("Argument count mismatch. Expected " + expectedTypes.length + " but got " + args.length);
@@ -137,12 +138,13 @@ public class UDPClient {
     }
 
 
-    
     public Response sendRequest(int serviceId, Args[] args) throws IOException, TimeoutException {
         
+        // retrieve the service schema for the given service ID and validate the request arguments against the expected input schema
         this.serviceSchema = ServiceSchemaFactory.getServiceSchema(serviceId);
         validateRequestSchema(args, this.serviceSchema.inputSchema);
 
+        // build the request message with a unique request ID, service ID, and the provided arguments
         int requestId = getRequestId();
         Request request = new Request(requestId, serviceId, args);
         byte[] requestBytes = PacketUtils.buildRequestMessage(request);
@@ -166,9 +168,47 @@ public class UDPClient {
             throw new TimeoutException(String.format("Request ID %d failed after %d retries", requestId, this.maxRetry));
         }
         incrementRequestId();
+
+        // return the parsed response from the server
         return PacketUtils.parseResponseMessage(response, this.serviceSchema);
     }
 
+
+    // Activate the monitoring mode
+    public void monitorServer(Callback callback) throws IOException, InterruptedException {
+
+        this.setMonitorMode(true); // will be toggled by the callback if session ended
+        
+        while (this.monitorMode) {
+            try {
+                // Wait for incoming callback messages from the server
+                byte[] callbackMessage = this.socket.receive();
+                if(debug) {System.out.println(Utils.bytesToHex(callbackMessage));}
+
+                // Parse the callback (follows the request message format)
+                Request callbackRequest = PacketUtils.parseCallbackMessage(callbackMessage);
+
+                if(debug) {System.out.println(callbackRequest.toString());} 
+
+                // Check for duplicate callback requests if at-most-one semantics is enabled
+                int callbackId = callbackRequest.requestId;
+                if( isSemanticInvocAtMostOne()
+                        && isDuplicateRequest(callbackId)){
+                    if(debug){System.out.println("Received duplicate callback request with ID: " + callbackRequest.requestId);}
+                    // continue;
+                }else {
+                    // store the callback request ID to prevent processing duplicates
+                    this.requestIdHistory.put(callbackRequest.requestId, true);
+                    requestIdHistory.put(callbackRequest.requestId, true);  
+                    callback.onCallback(callbackRequest);
+                }
+            } catch (SocketTimeoutException e) {
+                continue; // Continue waiting for callbacks
+            } 
+        }
+    }
+
+    // not used currently
     public void checkRequest(Response response) {
         int requestId = response.responseId;
         if (isDuplicateRequest(requestId)) {
@@ -178,48 +218,7 @@ public class UDPClient {
         this.requestIdHistory.put(requestId, true);
     }
 
-    public void monitorServer(Callback callback) throws IOException, InterruptedException {
-
-        
-        this.setMonitorMode(true); // will be toggle by the callback if session ended
-        
-        while (this.monitorMode) {
-            try {
-                byte[] callbackMessage = this.socket.receive();
-                if(debug) {System.out.println(Utils.bytesToHex(callbackMessage));}
-                Request callbackRequest = PacketUtils.parseCallbackMessage(callbackMessage);
-
-                if(debug) {System.out.println(callbackRequest.toString());} 
-
-                int callbackId = callbackRequest.requestId;
-                if( isSemanticInvocAtMostOne()
-                        && isDuplicateRequest(callbackId)){
-                    if(debug){System.out.println("Received duplicate callback request with ID: " + callbackRequest.requestId);}
-                    // continue;
-                }else {
-                    this.requestIdHistory.put(callbackRequest.requestId, true);
-                    requestIdHistory.put(callbackRequest.requestId, true);  
-                    callback.onCallback(callbackRequest);
-                }
-
-                // Response callbackResponse = new Response(
-                //     callbackRequest.requestId,
-                //     StatusCode.SUCCESS,
-                //     new Args[0] // For simplicity, we assume callback response has no payload
-                // );
-                // byte[] callbackResponseBytes = PacketUtils.buildResponseMessage(callbackResponse);
-                // this.socket.send(callbackResponseBytes);
-
-
-                // byte[] responseBytes = PacketUtils.buildResponseMessage(callbackResponse);
-                // this.socket.send(responseBytes);
-            } catch (SocketTimeoutException e) {
-                continue; // Continue waiting for callbacks
-            } 
-        }
-    }
-
-
+    // Builder class for UDPClient to allow flexible configuration when creating an instance
     public static class Builder {
         private int semanticInvoc = Constants.NO_SEM_INVO;
         private int timeoutMs = Constants.DEFAULT_TIMEOUT;

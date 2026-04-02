@@ -25,7 +25,7 @@ To adjust its parameter please take a look at the [Configuration](#configuration
 
 ```sh
 source script/setup-server.sh
-source script/run-server.sh
+source script/run-server.sh #run this only for default config
 ```
 
 ### Manual Compilation
@@ -33,9 +33,7 @@ source script/run-server.sh
 Compile all `.cpp` files:
 
 ```sh
-cd server
-mkdir -p bin
-
+mkdir -p server/bin
 g++ *.cpp net/*.cpp -o bin/app
 ```
 
@@ -54,7 +52,7 @@ g++ *.cpp net/*.cpp -o bin/app
 
 ## Custom Configuration
 
-Run this after compiling (After running the `source script/setup-server.sh`)
+Run the server executable with the following flags/options after compiling (After running the `source script/setup-server.sh`)
 
 ```
 Usage: ./server/bin/app [OPTIONS]

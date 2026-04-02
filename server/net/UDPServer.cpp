@@ -115,10 +115,12 @@ int32_t UDPServer::serveRequest(char* buffer, char* response, sockaddr_in& clien
 }
 
 
+// Generate a unique key for the client based on its IP and port
 uint64_t UDPServer::generateNetworkKey(const sockaddr_in& clientaddr) {
     return (static_cast<uint64_t>(ntohl(clientaddr.sin_addr.s_addr)) << 16) | ntohs(clientaddr.sin_port);
 }
 
+// Generate a unique key for the request based on client address (network key) and request ID
 MapKey UDPServer::generateMapKey(const sockaddr_in& clientaddr, int32_t requestId) {
     MapKey key;
     key.reqID = requestId;
@@ -126,6 +128,7 @@ MapKey UDPServer::generateMapKey(const sockaddr_in& clientaddr, int32_t requestI
     return key;
 }
 
+// Check if the request is a duplicate (same reqID from the same client)
 bool UDPServer::isDuplicateRequest(const sockaddr_in& clientaddr, int32_t reqID) {
     MapKey mapKey = generateMapKey(clientaddr, reqID);
     auto it = request_client_map.find(mapKey);
@@ -133,6 +136,7 @@ bool UDPServer::isDuplicateRequest(const sockaddr_in& clientaddr, int32_t reqID)
     return it != request_client_map.end() && it->second.reqID == reqID;
 }
 
+// Check if the request is outdated (reqID is less than the latest reqID seen from the same client)
 bool UDPServer::isOutdatedRequest(const sockaddr_in& clientaddr, int32_t reqID) {
     uint64_t networkKey = generateNetworkKey(clientaddr);
     auto it = latest_request_map.find(networkKey);

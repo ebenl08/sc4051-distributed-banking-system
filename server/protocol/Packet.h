@@ -13,6 +13,8 @@
 #include <string>
 #include <sstream>
 
+// define the general structure of a request and response packet for the banking system
+
 struct Request {
     int32_t reqID;
     int32_t serviceID;

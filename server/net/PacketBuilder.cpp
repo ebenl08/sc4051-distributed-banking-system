@@ -7,8 +7,12 @@
 
 Response PacketBuilder::parseCallbackResponsePacket(char* buffer, int& counter) {
     Response response = Response();
+
+    // Unmarshal header fields
     response.reqID = Marshalling::unmarshalInt32(buffer + counter); counter += 4;
     response.statusCode = Marshalling::unmarshalChar(buffer + counter++);
+
+    // Unmarshal the payload fields based on the callback schema, default: single string arg
     response.args = PacketBuilder::parseArgs(buffer, counter, {TYPE_STRING});
     response.payloadLength = counter; // Set payload length to total bytes read
     return response;
@@ -16,9 +20,12 @@ Response PacketBuilder::parseCallbackResponsePacket(char* buffer, int& counter) 
 
 Request PacketBuilder::parseRequestPacket(char* buffer, int& counter) {
     Request request = Request(); 
+
+    // Unmarshal header fields
     request.reqID = Marshalling::unmarshalInt32(buffer + counter); counter += INT32_SIZE;
     request.serviceID = Marshalling::unmarshalInt32(buffer + counter); counter += INT32_SIZE;
 
+    // Unmarshal the payload fields based on the request input service schema
     ServiceSchema schema = SchemaFactory::generateSchema(request.serviceID);
     request.args = PacketBuilder::parseArgs(buffer, counter, schema.inputTypes);
     return request;
@@ -26,21 +33,30 @@ Request PacketBuilder::parseRequestPacket(char* buffer, int& counter) {
 
 int32_t PacketBuilder::buildCallbackPacket(char* buffer, const Request& request) {
     int32_t counter = 0;
+
+    // Marshal header fields for callback packet from server
     Marshalling::marshal(buffer + counter, request.reqID); counter += INT32_SIZE;
     Marshalling::marshal(buffer + counter, request.serviceID); counter += INT32_SIZE;
+
+    // Marshal the payload fields
     PacketBuilder::buildArgs(buffer, counter, request.args);
     return counter;
 }
 
 int32_t PacketBuilder::buildResponsePacket(char* buffer, const Response& response) {
     int32_t counter = 0;
+
+    // Marshal header fields for response packet from server
     Marshalling::marshal(buffer + counter, response.reqID); counter += INT32_SIZE;
     Marshalling::marshal(buffer + counter, (char) response.statusCode); counter += CHAR_SIZE;
+
+    // Marshal the payload fields
     PacketBuilder::buildArgs(buffer, counter, response.args);
     return counter;
 }
 
 void PacketBuilder::buildArgs(char* buffer, int& counter, const std::vector<Argument>& args) {
+    // factory method to marshal arguments based on their type
     for (const Argument& arg : args) {
         if (arg.type == TYPE_STRING) {
             Marshalling::marshal(buffer + counter, arg.value.stringValue); counter += INT32_SIZE + strlen(arg.value.stringValue);
@@ -65,6 +81,8 @@ std::vector<Argument> PacketBuilder::parseArgs(char* buffer, int& counter, const
     args.reserve(schema.size());
 
     pdebug("Parsing arguments based on schema with %zu parameters", schema.size());
+
+    // factory method to unmarshal arguments based on the provided schema
 
     for (DataType type : schema) {
         Argument arg;

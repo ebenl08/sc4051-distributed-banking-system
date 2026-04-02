@@ -2,6 +2,7 @@
 #include "Marshalling.h"
 
 
+// marshal int32_t in big-endian format
 void Marshalling::marshal(char* buffer, int32_t value){
   uint32_t uValue = static_cast<uint32_t>(value);
   unsigned char* ptr = reinterpret_cast<unsigned char*>(buffer);
@@ -13,6 +14,7 @@ void Marshalling::marshal(char* buffer, int32_t value){
   ptr[3] = static_cast<unsigned char>(uValue & 0xFF);
 }
 
+// marshal int64_t in big-endian format
 void Marshalling::marshal(char* buffer, int64_t value){
   uint64_t uValue = static_cast<uint64_t>(value);
   unsigned char* ptr = reinterpret_cast<unsigned char*>(buffer);
@@ -27,6 +29,7 @@ void Marshalling::marshal(char* buffer, int64_t value){
   ptr[7] = static_cast<unsigned char>(uValue & 0xFF);
 }
 
+// marshal float in big-endian format
 void Marshalling::marshal(char* buffer, float value){
 
   uint32_t bits;
@@ -44,16 +47,20 @@ void Marshalling::marshal(char* buffer, float value){
 
 }
 
+// marshal string as length-prefixed data in big-endian format
 void Marshalling::marshal(char* buffer, const char* value){
   int32_t length = strlen(value);
   marshal(buffer, length); // First write the length of the string
   memcpy(buffer + 4, value, length);
 }
 
+// marshal single-byte char
 void Marshalling::marshal(char* buffer, char value){
   *buffer = (uint8_t) value;
 }
 
+
+// unmarshal int32_t from big-endian format
 int32_t Marshalling::unmarshalInt32(char* buffer){
   unsigned char* tmpbuffer = (unsigned char*) buffer;
   int32_t value = ((uint32_t) tmpbuffer[0] << 24 | 
@@ -63,6 +70,7 @@ int32_t Marshalling::unmarshalInt32(char* buffer){
   return value;
 }
 
+// unmarshal int64_t from big-endian format
 int64_t Marshalling::unmarshalInt64(char* buffer){
   const unsigned char* tmpbuffer = (unsigned char*) buffer;
   int64_t value = (((uint64_t)tmpbuffer[0] << 56) | ((uint64_t)tmpbuffer[1] << 48) |
@@ -72,6 +80,7 @@ int64_t Marshalling::unmarshalInt64(char* buffer){
   return value;
 }
 
+// unmarshal float from big-endian format
 float Marshalling::unmarshalFloat(char* buffer){
   unsigned char* tmp = reinterpret_cast<unsigned char*>(buffer);
   uint32_t bits = (static_cast<uint32_t>(tmp[0]) << 24) |
@@ -83,10 +92,12 @@ float Marshalling::unmarshalFloat(char* buffer){
   return value;
 }
 
+// unmarshal single-byte char
 char Marshalling::unmarshalChar(char* buffer){
   return buffer[0];
 }
 
+// unmarshal length-prefixed string from big-endian format
 std::string Marshalling::unmarshalString(char* buffer){
   char* ptr = buffer;
   int32_t length = Marshalling::unmarshalInt32(ptr);
