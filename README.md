@@ -44,6 +44,5 @@ The core engine of the Zeus Banking System. A high-performance, multi-threaded C
 | **MonitorManager** | Manages the monitor client stores and update active client on bank update |
 | **Account** | Data model representing individual user accounts. |
 
-    ```
 ### Notes
 Further details on the setup can be seen in [CLIENT_README.md](CLIENT_README.md) and [SERVER_README.md](SERVER_README.md)
