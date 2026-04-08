@@ -83,8 +83,8 @@ int32_t MonitorManager::buildCallbackPacket(char* buffer, const std::string& mes
     request.serviceID = SERVICE_MONITOR_LIVE; // Special service ID for monitor callbacks
     request.args.push_back(Argument(message.c_str()));
 
-    pinfo("MONITOR CALLBACK MESSAGE: %s\n%s", message.c_str(), 
-                hex_to_string(buffer, PacketBuilder::buildCallbackPacket(buffer, request)).c_str());
+    pinfo("MONITOR CALLBACK MESSAGE: %s\n", message.c_str());
+    pdebug("MONITOR CALLBACK RAW: %s\n", hex_to_string(buffer, PacketBuilder::buildCallbackPacket(buffer, request)).c_str());
     int32_t length = PacketBuilder::buildCallbackPacket(buffer, request);
     return length;
 }

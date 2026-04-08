@@ -12,10 +12,10 @@ javac -d javabin $(find . -name "client/*.java") # or just javac -d bin *.java h
 This command finds all `.java` files in the current directory and its subdirectories, then compiles them into the `bin/` directory, preserving the package structure.
 
 ## 2. Run the Program
-To execute a compiled class, use the following command from inside the `client/` directory. For example, to run the `DSBankingUI` class:
+To execute a compiled class, use the following command from inside the `client/` directory. For example, to run the `ZeusBankingClient` class:
 
 ```sh
-java -cp javabin <module-name> --host <hostname> --port <port>
+java -cp javabin ZeusBankingClient --host <hostname> --port <port>
 ```
 
 Alternatively you could also run the `run-client.sh` to open the actual CLI application or the `run-test-client.sh` to automatically load different request packages across the different services so that you don't need to spend time adding input into your application.

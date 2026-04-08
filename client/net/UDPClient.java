@@ -155,16 +155,18 @@ public class UDPClient {
         byte[] response = null;
         
         // This sends the request and waits for a response
-        while (retryCount <= this.maxRetry) {
+        while (retryCount < this.maxRetry) {
+            
             try {
                 this.socket.send(requestBytes);
                 response = this.socket.receive();
                 break;
             } catch (SocketTimeoutException e) {
+                if(debug) {System.out.println("Request timed out, retrying... (" + retryCount + "/" + this.maxRetry + ")");}
                 retryCount++;
-            } 
+            }
         }
-        if(retryCount > this.maxRetry){
+        if(retryCount >= this.maxRetry){
             throw new TimeoutException(String.format("Request ID %d failed after %d retries", requestId, this.maxRetry));
         }
         incrementRequestId();

@@ -52,7 +52,6 @@ public class PacketUtils {
     public static  Response parseResponseMessage(byte[] buffer, ServiceSchema serviceSchema) {
         int offset = 0;
         int requestId = Marshalling.unmarshalInt32(buffer, offset); 
-        
         offset += Constants.INT_SIZE;
 
         if(debug) {

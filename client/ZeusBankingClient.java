@@ -43,7 +43,7 @@ public class ZeusBankingClient {
                             .setDebug(false)
                             .setSemanticInvoc(Constants.AT_LEAST_ONE_SEM_INVO)
                             .setTimeoutMs(1000)
-                            .setMaxRetry(5)
+                            .setMaxRetry(3)
                             .setSocket(socket)
                             .build();  
     DSBankingHandle dsBankingHandle = new DSBankingHandle(client);

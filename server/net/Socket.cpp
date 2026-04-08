@@ -1,6 +1,7 @@
 #include "server/net/Socket.h"
 
 
+// Socket Constructor: Initializes the socket and binds it to the specified port and hostname
 Socket::Socket(int16_t port, const char* hostname){
 
   this->servsocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -21,11 +22,13 @@ Socket::Socket(int16_t port, const char* hostname){
 }
 
 
+// Send a message to the specified client address
 void Socket::send(const char* buffer, int length, const sockaddr_in clientaddr){
   socklen_t len = sizeof(clientaddr);
   sendto(this->servsocket, buffer, length, 0, (const sockaddr*) &clientaddr, len);
 }
 
+// Receive a message and populate the client address
 int Socket::receive(char* buffer, sockaddr_in& clientaddr){
   socklen_t clientlen = sizeof(clientaddr);
 
@@ -38,6 +41,7 @@ int Socket::receive(char* buffer, sockaddr_in& clientaddr){
   return n;
 }
 
+// Helper function to populate sockaddr_in structure
 void Socket::makeAddress(sockaddr_in* addr, const char* hostname, int16_t port){
   struct hostent *host;
   if((host = gethostbyname(hostname)) == NULL){
